@@ -73,6 +73,9 @@ float[] Pz = new float[0];
 float[] Prx = new float[0];
 float[] Pry = new float[0];
 float[] Prz = new float[0];
+float[] SPrx = new float[0];
+float[] SPry = new float[0];
+float[] SPrz = new float[0];
 float[] Pa = new float[0];
 
 float[] Lz = {0,-500,-1000,-1500,-2000,-2500,-3000,-3500,-4000,-4500};
@@ -131,7 +134,7 @@ public void draw() {
     endShape();
 
     popMatrix();
-    Lz[i] += volSmoothed*15;
+    Lz[i] += volSmoothed*20;
     if(Lz[i] > 1000){
       Lz = remove(Lz,i);
     }
@@ -145,6 +148,9 @@ public void draw() {
     Prx = append(Prx,random(0,6.2831f));
     Pry = append(Pry,random(0,6.2831f));
     Prz = append(Prz,random(0,6.2831f));
+    SPrx = append(SPrx,random(-0.2f,0.2f));
+    SPry = append(SPry,random(-0.2f,0.2f));
+    SPrz = append(SPrz,random(-0.2f,0.2f));
     Pa = append(Pa,random(10,35));
   }
   pushMatrix();
@@ -170,7 +176,10 @@ public void draw() {
     } else{
       box(spectrumSmoothed[0] * Pa[i]*3 + 4);
     }
-    Pz[i] += volSmoothed * 15;
+    Pz[i] += volSmoothed * 20;
+    Prx[i] += SPrx[i];
+    Pry[i] += SPry[i];
+    Prz[i] += SPrz[i];
     popMatrix();
     
     if (Pz[i] > 1000) {
@@ -180,6 +189,9 @@ public void draw() {
       Prx = remove(Prx,i);
       Pry = remove(Pry,i);
       Prz = remove(Prz,i);
+      SPrx = remove(SPrx,i);
+      SPry = remove(SPry,i);
+      SPrz = remove(SPrz,i);
       Pa = remove(Pa,i);
     }
     
