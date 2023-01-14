@@ -21,7 +21,7 @@ void setup() {
   background(0);
   
   //file
-  file = new SoundFile(this, "Survive.mp3");
+  file = new SoundFile(this, "Eclipse.mp3");
   
   //fft
   fft = new FFT(this,bands);
