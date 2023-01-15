@@ -86,8 +86,8 @@ void draw() {
 
   //ending
   if(millis()/1000-delayMS > file.duration()){
-    endDegree *= 1.1;
     rotateX(radians(endDegree));
+    endDegree *= 1.1;
   }
 
   //3D lines
@@ -171,7 +171,7 @@ void draw() {
   popMatrix();
 
   //Cube Patricles
-  for (int i = 0; i < floor(volSmoothed * 2 * random(1,1.8)); i++) {
+  for (int i = 0; i < floor(volSmoothed * 3 * random(1,1.8)); i++) {
     Px = append(Px,random(0,width));
     Py = append(Py,random(0,height));
     Pz = append(Pz, -2000);
@@ -190,12 +190,6 @@ void draw() {
     rotateX(Prx[i]);
     rotateY(Pry[i]);
     rotateZ(Prz[i]);
-    if (Pz[i] < - 1500) {
-      stroke(255,0.51 * (Pz[i] + 2000)+255-255*volSmoothed);
-    } else{
-      stroke(255,255-255*volSmoothed);
-    }
-    strokeWeight(1);
     if (Pz[i] < - 1500) {
       fill(rgb(Px[i] / float(width) * 360,0.3 * (Pz[i] + 2000)*volSmoothed+105));
     } else{
@@ -240,7 +234,7 @@ void draw() {
   rotateZ(mainBoxRz);
   stroke(0,0,200);
   strokeWeight(3);
-  fill(0,0,spectrum[0] * 200);
+  fill(0,0,volSmoothed*255);
   box(volSmoothed * 100 + 60);
 
   

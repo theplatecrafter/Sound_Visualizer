@@ -5,7 +5,6 @@ import processing.event.*;
 import processing.opengl.*;
 
 import processing.sound.*;
-import com.hamoid.*;
 
 import java.util.HashMap;
 import java.util.ArrayList;
@@ -20,10 +19,6 @@ public class Sound_Visualizer extends PApplet {
 
 //Library import
 
-
-
-//Video Export
-VideoExport VE;
 
 //SoundFile
 SoundFile file;
@@ -76,10 +71,6 @@ public void setup() {
 
   /* size commented out by preprocessor */;
   background(0);
-  
-  //VE
-  VE = new VideoExport(this,"Sound_Visualizer.mp4");
-  VE.setFrameRate(30);
 
   //file
   file = new SoundFile(this, "STW.mp3");
@@ -98,7 +89,6 @@ public void setup() {
   
   //play SoundFile
   file.play();
-  VE.startMovie();
   delayMS = millis()/1000;
 }      
 
@@ -200,7 +190,7 @@ public void draw() {
   popMatrix();
 
   //Cube Patricles
-  for (int i = 0; i < floor(volSmoothed * 2 * random(1,1.8f)); i++) {
+  for (int i = 0; i < floor(volSmoothed * 3 * random(1,1.8f)); i++) {
     Px = append(Px,random(0,width));
     Py = append(Py,random(0,height));
     Pz = append(Pz, -2000);
@@ -219,12 +209,6 @@ public void draw() {
     rotateX(Prx[i]);
     rotateY(Pry[i]);
     rotateZ(Prz[i]);
-    if (Pz[i] < - 1500) {
-      stroke(255,0.51f * (Pz[i] + 2000)+255-255*volSmoothed);
-    } else{
-      stroke(255,255-255*volSmoothed);
-    }
-    strokeWeight(1);
     if (Pz[i] < - 1500) {
       fill(rgb(Px[i] / PApplet.parseFloat(width) * 360,0.3f * (Pz[i] + 2000)*volSmoothed+105));
     } else{
@@ -269,7 +253,7 @@ public void draw() {
   rotateZ(mainBoxRz);
   stroke(0,0,200);
   strokeWeight(3);
-  fill(0,0,spectrum[0] * 200);
+  fill(0,0,volSmoothed*255);
   box(volSmoothed * 100 + 60);
 
   
@@ -360,7 +344,6 @@ public void draw() {
   }
 
   if(endDegree >= 180){
-    VE.endMovie();
       exit();
   }
 }
