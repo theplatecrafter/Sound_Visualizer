@@ -6,7 +6,7 @@ SoundFile file;
 
 //fft
 FFT fft;
-int bands = 512;
+int bands = 1024;
 float[] spectrum = new float[bands];
 
 //amplitude
@@ -40,15 +40,18 @@ float[] Pa = new float[0];
 float[] Lz = new float[0];
 float[] Ls = new float[0];
 
-float delayMS;
 
-//camera motion
-float camZ = -2000;
+//draw counter
+int drawCount = 0;
+int lastCount;
+
+//target FPS
+float FPS = 30;
 
 void setup() {
   
   for (int i = 0; i < 10; i++) {
-    Lz = append(Lz,i * ( - 500));
+    Lz = append(Lz,i * ( -500));
     Ls = append(Ls,int(i * (bands / 171)));
   }
   
@@ -57,6 +60,7 @@ void setup() {
   
   //file
   file = new SoundFile(this, "IFAL.mp3");
+  lastCount = int(FPS * file.duration());
   
   //fft
   fft = new FFT(this,bands);
@@ -69,28 +73,20 @@ void setup() {
   //BeatDetector
   BDR = new BeatDetector(this);
   BDR.input(file);
-  
-  //play SoundFile
-  file.play();
-  delayMS = millis() / 1000;
 }      
 
 void draw() { 
-  background(brightness);
-
-  //camera
-  camera(width/2.0, height/2.0, camZ, width/2.0, height/2.0, camZ-1, 0, 1, 0);
-  
-  //ending & camera
-  if (millis() / 1000 - delayMS > file.duration()) {
-    camZ += (-4000)/40;
-    if(int(camZ) <= -4000){
-      exit();
-    }
-  }else{
-    camZ += (((height/2.0) / tan(PI*30.0 / 180.0))-camZ)/20;
+  drawCount++;
+  if (drawCount == lastCount) {
+    exit();
   }
-
+  
+  background(brightness);
+  
+  file.cue(drawCount * (1 / FPS));
+  
+  
+  
   //sound analyze
   fft.analyze(spectrum);
   vol = amp.analyze();
@@ -98,11 +94,11 @@ void draw() {
     spectrumSmoothed[i] += (spectrum[i] - spectrumSmoothed[i]) / 2;
   }
   volSmoothed += (vol - volSmoothed) / 2;
-
+  
   //3D lines
   pushMatrix();
   if (Lz[Lz.length - 1] > - 4000) {
-    Lz = append(Lz, - 4500);
+    Lz = append(Lz, -4500);
     if (Ls[Ls.length - 1] / (bands / 171) > 10) {
       Ls = append(Ls,int(0));
     } else{
@@ -154,7 +150,7 @@ void draw() {
     curveVertex(0, height);
     curveVertex(0, height);
     for (int a = 0; a < 100; a++) {
-      curveVertex((a + 1) * (width / 100), avg(spectrumSmoothed,a * int(bands / 100),a * int(bands / 100) + int(bands / 100)) * ( - 600) + height - 5);
+      curveVertex((a + 1) * (width / 100), avg(spectrumSmoothed,a * int(bands / 100),a * int(bands / 100) + int(bands / 100)) * ( -600) + height - 5);
     }
     curveVertex(width, height);
     curveVertex(width, height);
@@ -187,9 +183,9 @@ void draw() {
     Prx = append(Prx,random(0,6.2831));
     Pry = append(Pry,random(0,6.2831));
     Prz = append(Prz,random(0,6.2831));
-    SPrx = append(SPrx,random( - 0.2,0.2));
-    SPry = append(SPry,random( - 0.2,0.2));
-    SPrz = append(SPrz,random( - 0.2,0.2));
+    SPrx = append(SPrx,random( -0.2,0.2));
+    SPry = append(SPry,random( -0.2,0.2));
+    SPrz = append(SPrz,random( -0.2,0.2));
     Pa = append(Pa,random(10,35));
   }
   pushMatrix();
@@ -276,7 +272,7 @@ void draw() {
   rectMode(CORNER);
   popMatrix();
   pushMatrix();
-  rotateX(radians( - 90));
+  rotateX(radians( -90));
   rectMode(CENTER);
   if (BDR.isBeat()) {
     translate(0,0,volSmoothed * 50 + 55 + spectrumSmoothed[0] * 500);
@@ -297,7 +293,7 @@ void draw() {
   rotateY(radians(60));
   noStroke();
   fill(255);
-  for (int i = 0; i < bands; i+=int(bands/150)) {
+  for (int i = 0; i < bands; i += int(bands / 150)) {
     fill(rgb(360 / float(bands) * i,255));
     rect(float(width) / 3 / float(bands) * i,0,float(width) / 3 / float(bands),spectrumSmoothed[i] * (height / 2));
     rect(float(width) / 3 / float(bands) * i,0,float(width) / 3 / float(bands),spectrumSmoothed[i] * (height / ( -2)));
@@ -314,7 +310,7 @@ void draw() {
   rotateY(radians(120));
   noStroke();
   fill(255);
-  for (int i = 0; i < bands; i+=int(bands/150)) {
+  for (int i = 0; i < bands; i += int(bands / 150)) {
     fill(rgb(360 / float(bands) * i,255));
     rect(float(width) / 3 / float(bands) * i,0,float(width) / 3 / float(bands),spectrumSmoothed[i] * (height / 2));
     rect(float(width) / 3 / float(bands) * i,0,float(width) / 3 / float(bands),spectrumSmoothed[i] * (height / ( -2)));
@@ -332,6 +328,9 @@ void draw() {
   else{
     brightness -= 5;
   }
+  
+  saveFrame("./video/######.png");
+  
 }
 
 //hue, opacity to rgb
