@@ -52,9 +52,9 @@ void setup() {
 
   fullScreen(P3D);
   background(0);
-  
+
   //file
-  file = new SoundFile(this, "whole.mp3");
+  file = new SoundFile(this, "STW.mp3");
   
   //fft
   fft = new FFT(this,bands);
@@ -333,7 +333,6 @@ void draw() {
   if(endDegree >= 180){
       exit();
   }
-
 }
 
 //hue, opacity to rgb

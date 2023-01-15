@@ -5,6 +5,7 @@ import processing.event.*;
 import processing.opengl.*;
 
 import processing.sound.*;
+import com.hamoid.*;
 
 import java.util.HashMap;
 import java.util.ArrayList;
@@ -19,6 +20,10 @@ public class Sound_Visualizer extends PApplet {
 
 //Library import
 
+
+
+//Video Export
+VideoExport VE;
 
 //SoundFile
 SoundFile file;
@@ -72,8 +77,12 @@ public void setup() {
   /* size commented out by preprocessor */;
   background(0);
   
+  //VE
+  VE = new VideoExport(this,"Sound_Visualizer.mp4");
+  VE.setFrameRate(30);
+
   //file
-  file = new SoundFile(this, "whole.mp3");
+  file = new SoundFile(this, "STW.mp3");
   
   //fft
   fft = new FFT(this,bands);
@@ -89,6 +98,7 @@ public void setup() {
   
   //play SoundFile
   file.play();
+  VE.startMovie();
   delayMS = millis()/1000;
 }      
 
@@ -350,9 +360,9 @@ public void draw() {
   }
 
   if(endDegree >= 180){
+    VE.endMovie();
       exit();
   }
-
 }
 
 //hue, opacity to rgb
