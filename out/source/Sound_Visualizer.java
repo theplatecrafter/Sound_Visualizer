@@ -25,7 +25,7 @@ SoundFile file;
 
 //fft
 FFT fft;
-int bands = 512;
+int bands = 1024;
 float[] spectrum = new float[bands];
 
 //amplitude
@@ -75,7 +75,7 @@ public void setup() {
   background(0);
   
   //file
-  file = new SoundFile(this, "shortTest.mp3");
+  file = new SoundFile(this, "whole.mp3");
   
   //fft
   fft = new FFT(this,bands);

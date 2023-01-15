@@ -56,7 +56,7 @@ void setup() {
   background(0);
   
   //file
-  file = new SoundFile(this, "shortTest.mp3");
+  file = new SoundFile(this, "IFAL.mp3");
   
   //fft
   fft = new FFT(this,bands);
