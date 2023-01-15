@@ -107,9 +107,6 @@ public void draw() {
   if(millis()/1000-delayMS > file.duration()){
     endDegree *= 1.1f;
     rotateX(radians(endDegree));
-    if(endDegree >= 180){
-      exit();
-    }
   }
 
   //3D lines
@@ -184,7 +181,7 @@ public void draw() {
     endShape();
 
     popMatrix();
-    Lz[i] += volSmoothed*20;
+    Lz[i] += volSmoothed * 30 + spectrumSmoothed[0]*50;
     if(Lz[i] > 1000){
       Lz = remove(Lz,i);
       Ls = remove(Ls,i);
@@ -228,7 +225,7 @@ public void draw() {
     } else{
       box(spectrumSmoothed[0] * Pa[i]*3 + 4);
     }
-    Pz[i] += volSmoothed * 20;
+    Pz[i] += volSmoothed * 30 + spectrumSmoothed[0]*50;
     Prx[i] += SPrx[i];
     Pry[i] += SPry[i];
     Prz[i] += SPrz[i];
@@ -352,6 +349,9 @@ public void draw() {
     brightness -= 5;
   }
 
+  if(endDegree >= 180){
+      exit();
+  }
 
 }
 
