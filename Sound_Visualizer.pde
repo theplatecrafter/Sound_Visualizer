@@ -54,7 +54,7 @@ void setup() {
   background(0);
   
   //file
-  file = new SoundFile(this, "HS.mp3");
+  file = new SoundFile(this, "whole.mp3");
   
   //fft
   fft = new FFT(this,bands);
@@ -88,9 +88,6 @@ void draw() {
   if(millis()/1000-delayMS > file.duration()){
     endDegree *= 1.1;
     rotateX(radians(endDegree));
-    if(endDegree >= 180){
-      exit();
-    }
   }
 
   //3D lines
@@ -107,9 +104,9 @@ void draw() {
     pushMatrix();
     translate(0,0,Lz[i]);
     if (Lz[i] < - 4000) {
-      stroke(255,0.51 * (Lz[i] + 4500));
+      stroke(255,0.3 * (Lz[i] + 4500)*volSmoothed+105);
     }else{
-      stroke(255);
+      stroke(255,150*volSmoothed+105);
     }
     strokeWeight(spectrumSmoothed[0]*13.35+3);
     noFill();
@@ -124,9 +121,9 @@ void draw() {
     }
     rect(0,0,width,height);
     if (Lz[i] < - 4000) {
-      stroke(rgb((Lz[i]+4500)/5500*360,0.51 * (Lz[i] + 4500)));
+      stroke(rgb((Lz[i]+4500)/5500*360,0.3 * (Lz[i] + 4500)*volSmoothed+105));
     }else{
-      stroke(rgb((Lz[i]+4500)/5500*360,255));
+      stroke(rgb((Lz[i]+4500)/5500*360,150*volSmoothed+105));
     }
     line(0,height,spectrumSmoothed[int(Ls[i])]*width/1.5,height);
     line(width-spectrumSmoothed[int(Ls[i])]*width/1.5,height,width,height);
@@ -139,9 +136,9 @@ void draw() {
     popMatrix();
 
     if (Lz[i] < - 4000) {
-      fill(255,0.51 * (Lz[i] + 4500));
+      fill(255,0.3 * (Lz[i] + 4500)*volSmoothed+105);
     }else{
-      fill(255);
+      fill(255,150*volSmoothed+105);
     }
     noStroke();
     beginShape();
@@ -194,15 +191,15 @@ void draw() {
     rotateY(Pry[i]);
     rotateZ(Prz[i]);
     if (Pz[i] < - 1500) {
-      stroke(255,0.51 * (Pz[i] + 2000));
+      stroke(255,0.51 * (Pz[i] + 2000)+255-255*volSmoothed);
     } else{
-      stroke(255);
+      stroke(255,255-255*volSmoothed);
     }
-    strokeWeight(0);
+    strokeWeight(1);
     if (Pz[i] < - 1500) {
-      fill(rgb(Px[i] / float(width) * 360,0.51 * (Pz[i] + 2000)));
+      fill(rgb(Px[i] / float(width) * 360,0.3 * (Pz[i] + 2000)*volSmoothed+105));
     } else{
-      fill(rgb(Px[i] / float(width) * 360,255));
+      fill(rgb(Px[i] / float(width) * 360,150*volSmoothed+105));
     }
     if (BDR.isBeat()) {
       box(spectrumSmoothed[0] * Pa[i] * 5 + 4);
@@ -332,7 +329,10 @@ void draw() {
   else{
     brightness -= 5;
   }
-
+  
+  if(endDegree >= 180){
+      exit();
+  }
 
 }
 
