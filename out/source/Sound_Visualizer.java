@@ -61,8 +61,6 @@ float[] Ls = new float[0];
 
 float delayMS;
 
-boolean ending = false;
-
 public void setup() {
 
   for(int i = 0; i < 10; i++){
@@ -93,10 +91,8 @@ public void setup() {
   delayMS = millis()/1000;
 }      
 
-
 public void draw() { 
   background(brightness);
-  
 
   //sound analyze
   fft.analyze(spectrum);
@@ -105,23 +101,21 @@ public void draw() {
     spectrumSmoothed[i] += (spectrum[i] - spectrumSmoothed[i]) / 2;
   }
   volSmoothed += (vol - volSmoothed) / 2;
-  if(mousePressed){
-    file.stop();
-    spectrumSmoothed = new float[bands];
-    volSmoothed = 0;
-    spectrum = new float[bands];
-    vol = 0;
-    ending = true;
-  }
-  if(millis()/1000-delayMS > file.duration() || ending){
+
+  //ending
+  if(millis()/1000-delayMS > file.duration()){
     for(int i = 0; i < Pz.length; i++){
       Pz[i] -= 50;
     }
     for(int i = 0; i < Lz.length; i++){
       Lz[i] -= 100;
     }
+    if(Lz[Lz.length-1] <= -4500){
+      exit();
+    }
   }
 
+  //3D lines
   pushMatrix();
   if(Lz[Lz.length-1] > -4000){
     Lz = append(Lz,-4500);
@@ -201,6 +195,7 @@ public void draw() {
   }
   popMatrix();
 
+  //Cube Patricles
   for (int i = 0; i < floor(volSmoothed * 2 * random(1,1.8f)); i++) {
     Px = append(Px,random(0,width));
     Py = append(Py,random(0,height));
@@ -258,31 +253,67 @@ public void draw() {
   }
   popMatrix();
   
-  pushMatrix();
-  translate(width / 2,height / 2,100);
+
   mainBoxRx += spectrumSmoothed[PApplet.parseInt(15 / 100 * bands)] / 3;
   mainBoxRy += spectrumSmoothed[PApplet.parseInt(30 / 100 * bands)] / 2;
   mainBoxRz += spectrumSmoothed[PApplet.parseInt(45 / 100 * bands)];
+  //small box
+  pushMatrix();
+  translate(width / 2,height / 2,0);
   rotateX(mainBoxRx);
   rotateY(mainBoxRy);
   rotateZ(mainBoxRz);
-  noFill();
-  stroke(200,0,0);
-  strokeWeight(6);
-  box(volSmoothed * 100 + 150);
-  popMatrix();
-  
-  pushMatrix();
-  translate(width / 2,height / 2,0);
-  rotateX(mainBoxRy);
-  rotateY(mainBoxRz);
-  rotateZ(mainBoxRx);
   stroke(0,0,200);
   strokeWeight(3);
-  fill(0,0,spectrum[1 / 100 * bands] * 200);
-  box(volSmoothed * 100 + 70);
+  fill(0,0,spectrum[0] * 200);
+  box(volSmoothed * 100 + 60);
+
+  
+  for(int i = 0; i < 4; i++){
+    pushMatrix();
+    rotateY(radians(i*90));
+    rectMode(CENTER);
+    if(BDR.isBeat()){
+      translate(0,0,volSmoothed * 50 + 75 + spectrumSmoothed[0]*500);
+    }else{
+      translate(0,0,volSmoothed * 50 + 75 + spectrumSmoothed[0]*200);
+    }
+    stroke(255,0,0);
+    fill(255,50,50,volSmoothed*255);
+    rect(0,0,volSmoothed * 100 + 55,volSmoothed * 100 + 55);
+    rectMode(CORNER);
+    popMatrix();
+  }
+  pushMatrix();
+  rotateX(radians(90));
+  rectMode(CENTER);
+  if(BDR.isBeat()){
+    translate(0,0,volSmoothed * 50 + 75 + spectrumSmoothed[0]*500);
+  }else{
+    translate(0,0,volSmoothed * 50 + 75 + spectrumSmoothed[0]*200);
+  }
+  stroke(255,0,0);
+  fill(255,50,50,volSmoothed*255);
+  rect(0,0,volSmoothed * 100 + 55,volSmoothed * 100 + 55);
+  rectMode(CORNER);
+  popMatrix();
+  pushMatrix();
+  rotateX(radians(-90));
+  rectMode(CENTER);
+  if(BDR.isBeat()){
+    translate(0,0,volSmoothed * 50 + 75 + spectrumSmoothed[0]*500);
+  }else{
+    translate(0,0,volSmoothed * 50 + 75 + spectrumSmoothed[0]*200);
+  }
+  stroke(255,0,0);
+  fill(255,50,50,volSmoothed*255);
+  rect(0,0,volSmoothed * 100 + 55,volSmoothed * 100 + 55);
+  rectMode(CORNER);
+  popMatrix();
+
   popMatrix();
   
+  //background spectrum left
   pushMatrix();
   translate(0,height / 2,0);
   rotateY(radians(60));
@@ -299,6 +330,7 @@ public void draw() {
   }
   popMatrix();
   
+  //background spectrum right
   pushMatrix();
   translate(width,height / 2,0);
   rotateY(radians(120));
@@ -315,6 +347,7 @@ public void draw() {
   }
   popMatrix();
   
+  //brightness controller
   if (BDR.isBeat()) {
     brightness = spectrum[1 / 100 * bands] * 200;
   }
@@ -322,10 +355,10 @@ public void draw() {
     brightness -= 5;
   }
 
-  //saveFrame
 
 }
 
+//hue, opacity to rgb
 public int rgb(float hue,float opacity) {
   float X = 1 - abs((hue / 60) % 2 - 1);
   float[] rgbOUT = new float[3];
@@ -352,6 +385,7 @@ public int rgb(float hue,float opacity) {
   return color(rgbOUT[0],rgbOUT[1],rgbOUT[2],opacity);
 }
 
+//remove a certain index from array
 public float[] remove(float[] input,int index) {
   float[] output = new float[0];
   for (int i = 0; i < input.length; i++) {
@@ -362,6 +396,7 @@ public float[] remove(float[] input,int index) {
   return output;
 }
 
+//average of an array
 public float avg(float[] input,int startIndex,int endIndex) {
   float output = 0;
   for (int i = startIndex; i <= endIndex; i++) {

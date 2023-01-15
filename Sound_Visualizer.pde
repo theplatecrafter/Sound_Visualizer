@@ -72,7 +72,6 @@ void setup() {
   delayMS = millis()/1000;
 }      
 
-
 void draw() { 
   background(brightness);
 
@@ -93,7 +92,7 @@ void draw() {
       Lz[i] -= 100;
     }
     if(Lz[Lz.length-1] <= -4500){
-      end();
+      exit();
     }
   }
 
@@ -236,31 +235,63 @@ void draw() {
   popMatrix();
   
 
-  //Main box
-  pushMatrix();
-  translate(width / 2,height / 2,100);
   mainBoxRx += spectrumSmoothed[int(15 / 100 * bands)] / 3;
   mainBoxRy += spectrumSmoothed[int(30 / 100 * bands)] / 2;
   mainBoxRz += spectrumSmoothed[int(45 / 100 * bands)];
-  rotateX(mainBoxRx);
-  rotateY(mainBoxRy);
-  rotateZ(mainBoxRz);
-  noFill();
-  stroke(200,0,0);
-  strokeWeight(6);
-  box(volSmoothed * 100 + 150);
-  popMatrix();
-  
   //small box
   pushMatrix();
   translate(width / 2,height / 2,0);
-  rotateX(mainBoxRy);
-  rotateY(mainBoxRz);
-  rotateZ(mainBoxRx);
+  rotateX(mainBoxRx);
+  rotateY(mainBoxRy);
+  rotateZ(mainBoxRz);
   stroke(0,0,200);
   strokeWeight(3);
-  fill(0,0,spectrum[1 / 100 * bands] * 200);
-  box(volSmoothed * 100 + 70);
+  fill(0,0,spectrum[0] * 200);
+  box(volSmoothed * 100 + 60);
+
+  
+  for(int i = 0; i < 4; i++){
+    pushMatrix();
+    rotateY(radians(i*90));
+    rectMode(CENTER);
+    if(BDR.isBeat()){
+      translate(0,0,volSmoothed * 50 + 75 + spectrumSmoothed[0]*500);
+    }else{
+      translate(0,0,volSmoothed * 50 + 75 + spectrumSmoothed[0]*200);
+    }
+    stroke(255,0,0);
+    fill(255,50,50,volSmoothed*255);
+    rect(0,0,volSmoothed * 100 + 55,volSmoothed * 100 + 55);
+    rectMode(CORNER);
+    popMatrix();
+  }
+  pushMatrix();
+  rotateX(radians(90));
+  rectMode(CENTER);
+  if(BDR.isBeat()){
+    translate(0,0,volSmoothed * 50 + 75 + spectrumSmoothed[0]*500);
+  }else{
+    translate(0,0,volSmoothed * 50 + 75 + spectrumSmoothed[0]*200);
+  }
+  stroke(255,0,0);
+  fill(255,50,50,volSmoothed*255);
+  rect(0,0,volSmoothed * 100 + 55,volSmoothed * 100 + 55);
+  rectMode(CORNER);
+  popMatrix();
+  pushMatrix();
+  rotateX(radians(-90));
+  rectMode(CENTER);
+  if(BDR.isBeat()){
+    translate(0,0,volSmoothed * 50 + 75 + spectrumSmoothed[0]*500);
+  }else{
+    translate(0,0,volSmoothed * 50 + 75 + spectrumSmoothed[0]*200);
+  }
+  stroke(255,0,0);
+  fill(255,50,50,volSmoothed*255);
+  rect(0,0,volSmoothed * 100 + 55,volSmoothed * 100 + 55);
+  rectMode(CORNER);
+  popMatrix();
+
   popMatrix();
   
   //background spectrum left
