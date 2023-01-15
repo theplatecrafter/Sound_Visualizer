@@ -59,6 +59,8 @@ float[] Pa = new float[0];
 float[] Lz = new float[0];
 float[] Ls = new float[0];
 
+float delayMS;
+
 public void setup() {
 
   for(int i = 0; i < 10; i++){
@@ -70,7 +72,7 @@ public void setup() {
   background(0);
   
   //file
-  file = new SoundFile(this, "Cetus.mp3");
+  file = new SoundFile(this, "song.mp3");
   
   //fft
   fft = new FFT(this,bands);
@@ -86,12 +88,17 @@ public void setup() {
   
   //play SoundFile
   file.play();
+  delayMS = millis()/1000;
 }      
 
 
 public void draw() { 
   background(brightness);
   
+  if(millis()/1000-delayMS > file.duration()){
+    exit();
+  }
+
   //sound analyze
   fft.analyze(spectrum);
   vol = amp.analyze();

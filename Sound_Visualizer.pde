@@ -40,6 +40,8 @@ float[] Pa = new float[0];
 float[] Lz = new float[0];
 float[] Ls = new float[0];
 
+float delayMS;
+
 void setup() {
 
   for(int i = 0; i < 10; i++){
@@ -51,7 +53,7 @@ void setup() {
   background(0);
   
   //file
-  file = new SoundFile(this, "WouldntChangeIt.mp3");
+  file = new SoundFile(this, "song.mp3");
   
   //fft
   fft = new FFT(this,bands);
@@ -67,12 +69,17 @@ void setup() {
   
   //play SoundFile
   file.play();
+  delayMS = millis()/1000;
 }      
 
 
 void draw() { 
   background(brightness);
   
+  if(millis()/1000-delayMS > file.duration()){
+    exit();
+  }
+
   //sound analyze
   fft.analyze(spectrum);
   vol = amp.analyze();
