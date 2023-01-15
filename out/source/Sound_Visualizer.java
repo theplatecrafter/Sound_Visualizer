@@ -60,6 +60,7 @@ float[] Lz = new float[0];
 float[] Ls = new float[0];
 
 float delayMS;
+float endDegree = 1;
 
 public void setup() {
 
@@ -72,7 +73,7 @@ public void setup() {
   background(0);
   
   //file
-  file = new SoundFile(this, "Cetus.mp3");
+  file = new SoundFile(this, "shortTest.mp3");
   
   //fft
   fft = new FFT(this,bands);
@@ -104,13 +105,9 @@ public void draw() {
 
   //ending
   if(millis()/1000-delayMS > file.duration()){
-    for(int i = 0; i < Pz.length; i++){
-      Pz[i] -= 50;
-    }
-    for(int i = 0; i < Lz.length; i++){
-      Lz[i] -= 100;
-    }
-    if(Lz[Lz.length-1] <= -4500){
+    endDegree *= 1.1f;
+    rotateX(radians(endDegree));
+    if(endDegree >= 180){
       exit();
     }
   }
