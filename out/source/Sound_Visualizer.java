@@ -61,6 +61,8 @@ float[] Ls = new float[0];
 
 float delayMS;
 
+boolean ending = false;
+
 public void setup() {
 
   for(int i = 0; i < 10; i++){
@@ -72,7 +74,7 @@ public void setup() {
   background(0);
   
   //file
-  file = new SoundFile(this, "song.mp3");
+  file = new SoundFile(this, "Cetus.mp3");
   
   //fft
   fft = new FFT(this,bands);
@@ -95,9 +97,6 @@ public void setup() {
 public void draw() { 
   background(brightness);
   
-  if(millis()/1000-delayMS > file.duration()){
-    exit();
-  }
 
   //sound analyze
   fft.analyze(spectrum);
@@ -106,7 +105,23 @@ public void draw() {
     spectrumSmoothed[i] += (spectrum[i] - spectrumSmoothed[i]) / 2;
   }
   volSmoothed += (vol - volSmoothed) / 2;
-  
+  if(mousePressed){
+    file.stop();
+    spectrumSmoothed = new float[bands];
+    volSmoothed = 0;
+    spectrum = new float[bands];
+    vol = 0;
+    ending = true;
+  }
+  if(millis()/1000-delayMS > file.duration() || ending){
+    for(int i = 0; i < Pz.length; i++){
+      Pz[i] -= 50;
+    }
+    for(int i = 0; i < Lz.length; i++){
+      Lz[i] -= 100;
+    }
+  }
+
   pushMatrix();
   if(Lz[Lz.length-1] > -4000){
     Lz = append(Lz,-4500);

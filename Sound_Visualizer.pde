@@ -53,7 +53,7 @@ void setup() {
   background(0);
   
   //file
-  file = new SoundFile(this, "song.mp3");
+  file = new SoundFile(this, "Cetus.mp3");
   
   //fft
   fft = new FFT(this,bands);
@@ -76,9 +76,6 @@ void setup() {
 void draw() { 
   background(brightness);
   
-  if(millis()/1000-delayMS > file.duration()){
-    exit();
-  }
 
   //sound analyze
   fft.analyze(spectrum);
@@ -87,7 +84,19 @@ void draw() {
     spectrumSmoothed[i] += (spectrum[i] - spectrumSmoothed[i]) / 2;
   }
   volSmoothed += (vol - volSmoothed) / 2;
-  
+
+  if(millis()/1000-delayMS > file.duration()){
+    for(int i = 0; i < Pz.length; i++){
+      Pz[i] -= 50;
+    }
+    for(int i = 0; i < Lz.length; i++){
+      Lz[i] -= 100;
+    }
+    if(Lz[Lz.length-1] <= -4500){
+      end();
+    }
+  }
+
   pushMatrix();
   if(Lz[Lz.length-1] > -4000){
     Lz = append(Lz,-4500);
