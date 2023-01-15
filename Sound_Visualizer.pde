@@ -180,7 +180,7 @@ void draw() {
   popMatrix();
   
   //Cube Patricles
-  for (int i = 0; i < floor(volSmoothed * 3 * random(1,1.8)); i++) {
+  for (int i = 0; i < floor(volSmoothed * 2 * random(1,1.8)); i++) {
     Px = append(Px,random(0,width));
     Py = append(Py,random(0,height));
     Pz = append(Pz, -2000);
@@ -243,7 +243,7 @@ void draw() {
   rotateZ(mainBoxRz);
   stroke(0,0,200);
   strokeWeight(3);
-  fill(0,0,volSmoothed * 255);
+  fill(0);
   box(volSmoothed * 100 + 40);
   
   
