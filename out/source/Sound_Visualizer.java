@@ -4,7 +4,8 @@ import processing.data.*;
 import processing.event.*;
 import processing.opengl.*;
 
-import processing.sound.*;
+import ddf.minim.*;
+import ddf.minim.analysis.*;
 
 import java.util.HashMap;
 import java.util.ArrayList;
@@ -20,20 +21,15 @@ public class Sound_Visualizer extends PApplet {
 //Library import
 
 
-//SoundFile
-SoundFile file;
 
-//fft
+//Minim
+Minim minim;
+MultiChannelBuffer song;
+float[] leftChannel;
 FFT fft;
+BeatDetect beat;
 int bands = 512;
-float[] spectrum = new float[bands];
-
-//amplitude
-float vol;
-Amplitude amp;
-
-//BeatDetector
-BeatDetector BDR;
+float vol = 0;
 
 //other vars
 float[] spectrumSmoothed = new float[bands];
@@ -66,6 +62,8 @@ int lastCount;
 
 //target FPS
 float FPS = 30;
+float framePeriod = 1.0f / FPS;
+float samplesPerFrame;
 
 public void setup() {
   
@@ -77,24 +75,24 @@ public void setup() {
   /* size commented out by preprocessor */;
   background(0);
   
-  //file
-  file = new SoundFile(this, "IFAL.mp3");
-  lastCount = PApplet.parseInt(FPS * file.duration());
+  minim = new Minim(this);
+  song = new MultiChannelBuffer(1,1);
+  float sampleRate = minim.loadFileIntoBuffer("HS.mp3", song);
+  leftChannel = song.getChannel(0);
+  fft = new FFT(bands * 2, sampleRate);
+  samplesPerFrame = framePeriod * sampleRate;
   
-  //fft
-  fft = new FFT(this,bands);
-  fft.input(file);
-  
-  //Amplitude
-  amp = new Amplitude(this);
-  amp.input(file);
-  
-  //BeatDetector
-  BDR = new BeatDetector(this);
-  BDR.input(file);
+  int N = song.getBufferSize();
+  float songDuration = N / sampleRate;
+  println("sample rate = ", sampleRate);
+  println("samples per frame = ", samplesPerFrame);
+  println("buffer size = ", N);
+  println("song duration (secs) = ", songDuration);
+  lastCount = PApplet.parseInt(N / samplesPerFrame);
+  println("lastCount = ", lastCount);
 
-  //file.play();
-}      
+  beat = new BeatDetect();
+}
 
 public void draw() { 
   drawCount++;
@@ -104,16 +102,18 @@ public void draw() {
   
   background(brightness);
   
-  file.playFor(1/FPS);
-  
-  
   //sound analyze
-  fft.analyze(spectrum);
-  vol = amp.analyze();
+  println(beat.detect(song.mix));
+  int sampleIndex = PApplet.parseInt(drawCount * samplesPerFrame);
+  fft.forward(leftChannel,sampleIndex);
+  vol = 0.5f;
+  
   for (int i = 0; i < bands; i++) {
-    spectrumSmoothed[i] += (spectrum[i] - spectrumSmoothed[i]) / 2;
+    spectrumSmoothed[i] += (fft.getBand(i) / bands - spectrumSmoothed[i]) / 2;
   }
   volSmoothed += (vol - volSmoothed) / 2;
+  
+  
   
   //3D lines
   pushMatrix();
@@ -196,7 +196,7 @@ public void draw() {
   popMatrix();
   
   //Cube Patricles
-  for (int i = 0; i < floor(volSmoothed * 3 * random(1,1.8f)); i++) {
+  for (int i = 0; i < floor(volSmoothed * 2 * random(1,1.8f)); i++) {
     Px = append(Px,random(0,width));
     Py = append(Py,random(0,height));
     Pz = append(Pz, -2000);
@@ -220,7 +220,7 @@ public void draw() {
     } else{
       fill(rgb(Px[i] / PApplet.parseFloat(width) * 360,150 * volSmoothed + 105));
     }
-    if (BDR.isBeat()) {
+    if (false) {
       box(spectrumSmoothed[0] * Pa[i] * 5 + 4);
     } else{
       box(spectrumSmoothed[0] * Pa[i] * 3 + 4);
@@ -259,7 +259,7 @@ public void draw() {
   rotateZ(mainBoxRz);
   stroke(0,0,200);
   strokeWeight(3);
-  fill(0,0,volSmoothed * 255);
+  fill(0);
   box(volSmoothed * 100 + 40);
   
   
@@ -267,7 +267,7 @@ public void draw() {
     pushMatrix();
     rotateY(radians(i * 90));
     rectMode(CENTER);
-    if (BDR.isBeat()) {
+    if (false) {
       translate(0,0,volSmoothed * 50 + 55 + spectrumSmoothed[0] * 500);
     } else{
       translate(0,0,volSmoothed * 50 + 55 + spectrumSmoothed[0] * 200);
@@ -281,7 +281,7 @@ public void draw() {
   pushMatrix();
   rotateX(radians(90));
   rectMode(CENTER);
-  if (BDR.isBeat()) {
+  if (false) {
     translate(0,0,volSmoothed * 50 + 55 + spectrumSmoothed[0] * 500);
   } else{
     translate(0,0,volSmoothed * 50 + 55 + spectrumSmoothed[0] * 200);
@@ -294,7 +294,7 @@ public void draw() {
   pushMatrix();
   rotateX(radians( -90));
   rectMode(CENTER);
-  if (BDR.isBeat()) {
+  if (false) {
     translate(0,0,volSmoothed * 50 + 55 + spectrumSmoothed[0] * 500);
   } else{
     translate(0,0,volSmoothed * 50 + 55 + spectrumSmoothed[0] * 200);
@@ -342,8 +342,8 @@ public void draw() {
   popMatrix();
   
   //brightness controller
-  if (BDR.isBeat()) {
-    brightness = spectrum[1 / 100 * bands] * 200;
+  if (false) {
+    brightness = spectrumSmoothed[1 / 100 * bands] * 200;
   }
   else{
     brightness -= 5;
@@ -401,7 +401,7 @@ public float avg(float[] input,int startIndex,int endIndex) {
 }
 
 
-  public void settings() { fullScreen(P3D); }
+  public void settings() { size(1024, 800, P3D); }
 
   static public void main(String[] passedArgs) {
     String[] appletArgs = new String[] { "Sound_Visualizer" };

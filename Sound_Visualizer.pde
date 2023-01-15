@@ -1,20 +1,15 @@
 //Library import
-import processing.sound.*;
+import ddf.minim.*;
+import ddf.minim.analysis.*;
 
-//SoundFile
-SoundFile file;
-
-//fft
+//Minim
+Minim minim;
+MultiChannelBuffer song;
+float[] leftChannel;
 FFT fft;
+BeatDetect beat;
 int bands = 512;
-float[] spectrum = new float[bands];
-
-//amplitude
-float vol;
-Amplitude amp;
-
-//BeatDetector
-BeatDetector BDR;
+float vol = 0;
 
 //other vars
 float[] spectrumSmoothed = new float[bands];
@@ -47,6 +42,8 @@ int lastCount;
 
 //target FPS
 float FPS = 30;
+float framePeriod = 1.0 / FPS;
+float samplesPerFrame;
 
 void setup() {
   
@@ -55,27 +52,27 @@ void setup() {
     Ls = append(Ls,int(i * (bands / 171)));
   }
   
-  fullScreen(P3D);
+  size(1024, 800, P3D);
   background(0);
   
-  //file
-  file = new SoundFile(this, "IFAL.mp3");
-  lastCount = int(FPS * file.duration());
+  minim = new Minim(this);
+  song = new MultiChannelBuffer(1,1);
+  float sampleRate = minim.loadFileIntoBuffer("HS.mp3", song);
+  leftChannel = song.getChannel(0);
+  fft = new FFT(bands * 2, sampleRate);
+  samplesPerFrame = framePeriod * sampleRate;
   
-  //fft
-  fft = new FFT(this,bands);
-  fft.input(file);
-  
-  //Amplitude
-  amp = new Amplitude(this);
-  amp.input(file);
-  
-  //BeatDetector
-  BDR = new BeatDetector(this);
-  BDR.input(file);
+  int N = song.getBufferSize();
+  float songDuration = N / sampleRate;
+  println("sample rate = ", sampleRate);
+  println("samples per frame = ", samplesPerFrame);
+  println("buffer size = ", N);
+  println("song duration (secs) = ", songDuration);
+  lastCount = int(N / samplesPerFrame);
+  println("lastCount = ", lastCount);
 
-  //file.play();
-}      
+  beat = new BeatDetect();
+}
 
 void draw() { 
   drawCount++;
@@ -85,17 +82,17 @@ void draw() {
   
   background(brightness);
   
-  
-  file.playFor(1/FPS,drawCount * (1 / FPS));
-  
-  
   //sound analyze
-  fft.analyze(spectrum);
-  vol = amp.analyze();
+  int sampleIndex = int(drawCount * samplesPerFrame);
+  fft.forward(leftChannel,sampleIndex);
+  vol = 0.5;
+  
   for (int i = 0; i < bands; i++) {
-    spectrumSmoothed[i] += (spectrum[i] - spectrumSmoothed[i]) / 2;
+    spectrumSmoothed[i] += (fft.getBand(i) / bands - spectrumSmoothed[i]) / 2;
   }
   volSmoothed += (vol - volSmoothed) / 2;
+  
+  
   
   //3D lines
   pushMatrix();
@@ -202,7 +199,7 @@ void draw() {
     } else{
       fill(rgb(Px[i] / float(width) * 360,150 * volSmoothed + 105));
     }
-    if (BDR.isBeat()) {
+    if (false) {
       box(spectrumSmoothed[0] * Pa[i] * 5 + 4);
     } else{
       box(spectrumSmoothed[0] * Pa[i] * 3 + 4);
@@ -249,7 +246,7 @@ void draw() {
     pushMatrix();
     rotateY(radians(i * 90));
     rectMode(CENTER);
-    if (BDR.isBeat()) {
+    if (false) {
       translate(0,0,volSmoothed * 50 + 55 + spectrumSmoothed[0] * 500);
     } else{
       translate(0,0,volSmoothed * 50 + 55 + spectrumSmoothed[0] * 200);
@@ -263,7 +260,7 @@ void draw() {
   pushMatrix();
   rotateX(radians(90));
   rectMode(CENTER);
-  if (BDR.isBeat()) {
+  if (false) {
     translate(0,0,volSmoothed * 50 + 55 + spectrumSmoothed[0] * 500);
   } else{
     translate(0,0,volSmoothed * 50 + 55 + spectrumSmoothed[0] * 200);
@@ -276,7 +273,7 @@ void draw() {
   pushMatrix();
   rotateX(radians( -90));
   rectMode(CENTER);
-  if (BDR.isBeat()) {
+  if (false) {
     translate(0,0,volSmoothed * 50 + 55 + spectrumSmoothed[0] * 500);
   } else{
     translate(0,0,volSmoothed * 50 + 55 + spectrumSmoothed[0] * 200);
@@ -324,8 +321,8 @@ void draw() {
   popMatrix();
   
   //brightness controller
-  if (BDR.isBeat()) {
-    brightness = spectrum[1 / 100 * bands] * 200;
+  if (false) {
+    brightness = spectrumSmoothed[1 / 100 * bands] * 200;
   }
   else{
     brightness -= 5;
