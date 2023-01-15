@@ -41,7 +41,9 @@ float[] Lz = new float[0];
 float[] Ls = new float[0];
 
 float delayMS;
-float endDegree = 1;
+
+//camera motion
+float camZ = -2000;
 
 void setup() {
   
@@ -54,7 +56,7 @@ void setup() {
   background(0);
   
   //file
-  file = new SoundFile(this, "STW.mp3");
+  file = new SoundFile(this, "shortTest.mp3");
   
   //fft
   fft = new FFT(this,bands);
@@ -75,7 +77,20 @@ void setup() {
 
 void draw() { 
   background(brightness);
+
+  //camera
+  camera(width/2.0, height/2.0, camZ, width/2.0, height/2.0, camZ-1, 0, 1, 0);
   
+  //ending & camera
+  if (millis() / 1000 - delayMS > file.duration()) {
+    camZ += (-4000)/40;
+    if(int(camZ) <= -4000){
+      exit();
+    }
+  }else{
+    camZ += (((height/2.0) / tan(PI*30.0 / 180.0))-camZ)/20;
+  }
+
   //sound analyze
   fft.analyze(spectrum);
   vol = amp.analyze();
@@ -83,13 +98,7 @@ void draw() {
     spectrumSmoothed[i] += (spectrum[i] - spectrumSmoothed[i]) / 2;
   }
   volSmoothed += (vol - volSmoothed) / 2;
-  
-  //ending
-  if (millis() / 1000 - delayMS > file.duration()) {
-    rotateX(radians(endDegree));
-    endDegree *= 1.1;
-  }
-  
+
   //3D lines
   pushMatrix();
   if (Lz[Lz.length - 1] > - 4000) {
@@ -145,7 +154,7 @@ void draw() {
     curveVertex(0, height);
     curveVertex(0, height);
     for (int a = 0; a < 100; a++) {
-      curveVertex((a + 1) * (width / 100), avg(spectrumSmoothed,a * int(bands / 100),a * int(bands / 100) + int(bands / 100)) * ( - 1000) + height - 5);
+      curveVertex((a + 1) * (width / 100), avg(spectrumSmoothed,a * int(bands / 100),a * int(bands / 100) + int(bands / 100)) * ( - 600) + height - 5);
     }
     curveVertex(width, height);
     curveVertex(width, height);
@@ -155,7 +164,7 @@ void draw() {
     curveVertex(width, 0);
     curveVertex(width, 0);
     for (int a = 0; a < 100; a++) {
-      curveVertex(width - (a + 1) * (width / 100), avg(spectrumSmoothed,a * int(bands / 100),a * int(bands / 100) + int(bands / 100)) * 1000 + 5);
+      curveVertex(width - (a + 1) * (width / 100), avg(spectrumSmoothed,a * int(bands / 100),a * int(bands / 100) + int(bands / 100)) * 600 + 5);
     }
     curveVertex(0, 0);
     curveVertex(0, 0);
@@ -235,7 +244,7 @@ void draw() {
   stroke(0,0,200);
   strokeWeight(3);
   fill(0,0,volSmoothed * 255);
-  box(volSmoothed * 100 + 60);
+  box(volSmoothed * 100 + 40);
   
   
   for (int i = 0; i < 4; i++) {
@@ -243,13 +252,13 @@ void draw() {
     rotateY(radians(i * 90));
     rectMode(CENTER);
     if (BDR.isBeat()) {
-      translate(0,0,volSmoothed * 50 + 75 + spectrumSmoothed[0] * 500);
+      translate(0,0,volSmoothed * 50 + 55 + spectrumSmoothed[0] * 500);
     } else{
-      translate(0,0,volSmoothed * 50 + 75 + spectrumSmoothed[0] * 200);
+      translate(0,0,volSmoothed * 50 + 55 + spectrumSmoothed[0] * 200);
     }
     stroke(255,0,0);
     fill(255,50,50,volSmoothed * 255);
-    rect(0,0,volSmoothed * 100 + 55,volSmoothed * 100 + 55);
+    rect(0,0,volSmoothed * 100 + 35,volSmoothed * 100 + 35);
     rectMode(CORNER);
     popMatrix();
   }
@@ -257,26 +266,26 @@ void draw() {
   rotateX(radians(90));
   rectMode(CENTER);
   if (BDR.isBeat()) {
-    translate(0,0,volSmoothed * 50 + 75 + spectrumSmoothed[0] * 500);
+    translate(0,0,volSmoothed * 50 + 55 + spectrumSmoothed[0] * 500);
   } else{
-    translate(0,0,volSmoothed * 50 + 75 + spectrumSmoothed[0] * 200);
+    translate(0,0,volSmoothed * 50 + 55 + spectrumSmoothed[0] * 200);
   }
   stroke(255,0,0);
   fill(255,50,50,volSmoothed * 255);
-  rect(0,0,volSmoothed * 100 + 55,volSmoothed * 100 + 55);
+  rect(0,0,volSmoothed * 100 + 35,volSmoothed * 100 + 35);
   rectMode(CORNER);
   popMatrix();
   pushMatrix();
   rotateX(radians( - 90));
   rectMode(CENTER);
   if (BDR.isBeat()) {
-    translate(0,0,volSmoothed * 50 + 75 + spectrumSmoothed[0] * 500);
+    translate(0,0,volSmoothed * 50 + 55 + spectrumSmoothed[0] * 500);
   } else{
-    translate(0,0,volSmoothed * 50 + 75 + spectrumSmoothed[0] * 200);
+    translate(0,0,volSmoothed * 50 + 55 + spectrumSmoothed[0] * 200);
   }
   stroke(255,0,0);
   fill(255,50,50,volSmoothed * 255);
-  rect(0,0,volSmoothed * 100 + 55,volSmoothed * 100 + 55);
+  rect(0,0,volSmoothed * 100 + 35,volSmoothed * 100 + 35);
   rectMode(CORNER);
   popMatrix();
   
@@ -288,7 +297,7 @@ void draw() {
   rotateY(radians(60));
   noStroke();
   fill(255);
-  for (int i = 0; i < bands; i++) {
+  for (int i = 0; i < bands; i+=int(bands/150)) {
     fill(rgb(360 / float(bands) * i,255));
     rect(float(width) / 3 / float(bands) * i,0,float(width) / 3 / float(bands),spectrumSmoothed[i] * (height / 2));
     rect(float(width) / 3 / float(bands) * i,0,float(width) / 3 / float(bands),spectrumSmoothed[i] * (height / ( -2)));
@@ -305,7 +314,7 @@ void draw() {
   rotateY(radians(120));
   noStroke();
   fill(255);
-  for (int i = 0; i < bands; i++) {
+  for (int i = 0; i < bands; i+=int(bands/150)) {
     fill(rgb(360 / float(bands) * i,255));
     rect(float(width) / 3 / float(bands) * i,0,float(width) / 3 / float(bands),spectrumSmoothed[i] * (height / 2));
     rect(float(width) / 3 / float(bands) * i,0,float(width) / 3 / float(bands),spectrumSmoothed[i] * (height / ( -2)));
@@ -322,10 +331,6 @@ void draw() {
   }
   else{
     brightness -= 5;
-  }
-  
-  if (endDegree >= 180) {
-    exit();
   }
 }
 

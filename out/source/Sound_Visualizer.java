@@ -60,20 +60,22 @@ float[] Lz = new float[0];
 float[] Ls = new float[0];
 
 float delayMS;
-float endDegree = 1;
+
+//camera motion
+float camZ = -2000;
 
 public void setup() {
-
-  for(int i = 0; i < 10; i++){
-    Lz = append(Lz,i*(-500));
-    Ls = append(Ls,PApplet.parseInt(i*(bands/171)));
+  
+  for (int i = 0; i < 10; i++) {
+    Lz = append(Lz,i * ( - 500));
+    Ls = append(Ls,PApplet.parseInt(i * (bands / 171)));
   }
-
+  
   /* size commented out by preprocessor */;
   background(0);
-
+  
   //file
-  file = new SoundFile(this, "STW.mp3");
+  file = new SoundFile(this, "shortTest.mp3");
   
   //fft
   fft = new FFT(this,bands);
@@ -89,11 +91,24 @@ public void setup() {
   
   //play SoundFile
   file.play();
-  delayMS = millis()/1000;
+  delayMS = millis() / 1000;
 }      
 
 public void draw() { 
   background(brightness);
+
+  //camera
+  camera(width/2.0f, height/2.0f, camZ, width/2.0f, height/2.0f, camZ-1, 0, 1, 0);
+  
+  //ending & camera
+  if (millis() / 1000 - delayMS > file.duration()) {
+    camZ += (-4000)/40;
+    if(PApplet.parseInt(camZ) <= -4000){
+      exit();
+    }
+  }else{
+    camZ += (((height/2.0f) / tan(PI*30.0f / 180.0f))-camZ)/20;
+  }
 
   //sound analyze
   fft.analyze(spectrum);
@@ -103,92 +118,86 @@ public void draw() {
   }
   volSmoothed += (vol - volSmoothed) / 2;
 
-  //ending
-  if(millis()/1000-delayMS > file.duration()){
-    endDegree *= 1.1f;
-    rotateX(radians(endDegree));
-  }
-
   //3D lines
   pushMatrix();
-  if(Lz[Lz.length-1] > -4000){
-    Lz = append(Lz,-4500);
-    if(Ls[Ls.length-1]/(bands/171) > 10){
+  if (Lz[Lz.length - 1] > - 4000) {
+    Lz = append(Lz, - 4500);
+    if (Ls[Ls.length - 1] / (bands / 171) > 10) {
       Ls = append(Ls,PApplet.parseInt(0));
-    }else{
-      Ls = append(Ls,PApplet.parseInt(Ls[Ls.length-1]+(bands/171)));
+    } else{
+      Ls = append(Ls,PApplet.parseInt(Ls[Ls.length - 1] + (bands / 171)));
     }
   }
-  for(int i = 0; i < Lz.length; i++){
+  for (int i = 0; i < Lz.length; i++) {
     pushMatrix();
     translate(0,0,Lz[i]);
     if (Lz[i] < - 4000) {
-      stroke(255,0.3f * (Lz[i] + 4500)*volSmoothed+105);
-    }else{
-      stroke(255,150*volSmoothed+105);
+      stroke(255,0.3f * (Lz[i] + 4500) * volSmoothed + 105);
+    } else{
+      stroke(255,150 * volSmoothed + 105);
     }
-    strokeWeight(spectrumSmoothed[0]*13.35f+3);
+    strokeWeight(spectrumSmoothed[0] * 13.35f + 3);
     noFill();
     rect(0,0,width,height);
-
+    
     pushMatrix();
     translate(0,0,250);
     if (Lz[i] < - 4000) {
-      stroke(volSmoothed*100,0.51f * (Lz[i] + 4500));
-    }else{
-      stroke(volSmoothed*100);
+      stroke(volSmoothed * 100,0.51f * (Lz[i] + 4500));
+    } else{
+      stroke(volSmoothed * 100);
     }
     rect(0,0,width,height);
     if (Lz[i] < - 4000) {
-      stroke(rgb((Lz[i]+4500)/5500*360,0.3f * (Lz[i] + 4500)*volSmoothed+105));
-    }else{
-      stroke(rgb((Lz[i]+4500)/5500*360,150*volSmoothed+105));
+      stroke(rgb((Lz[i] + 4500) / 5500 * 360,0.3f * (Lz[i] + 4500) * volSmoothed + 105));
+    } else{
+      stroke(rgb((Lz[i] + 4500) / 5500 * 360,150 * volSmoothed + 105));
     }
-    line(0,height,spectrumSmoothed[PApplet.parseInt(Ls[i])]*width/1.5f,height);
-    line(width-spectrumSmoothed[PApplet.parseInt(Ls[i])]*width/1.5f,height,width,height);
-    line(0,0,0,spectrumSmoothed[PApplet.parseInt(Ls[i])]*height/1.5f);
-    line(0,height-spectrumSmoothed[PApplet.parseInt(Ls[i])]*height/1.5f,0,height);
-    line(0,0,spectrumSmoothed[PApplet.parseInt(Ls[i])]*width/1.5f,0);
-    line(width-spectrumSmoothed[PApplet.parseInt(Ls[i])]*width/1.5f,0,width,0);
-    line(width,0,width,spectrumSmoothed[PApplet.parseInt(Ls[i])]*height/1.5f);
-    line(width,height-spectrumSmoothed[PApplet.parseInt(Ls[i])]*height/1.5f,width,height);
+    line(0,height,spectrumSmoothed[PApplet.parseInt(Ls[i])] * width / 1.5f,height);
+    line(width - spectrumSmoothed[PApplet.parseInt(Ls[i])] * width / 1.5f,height,width,height);
+    line(0,0,0,spectrumSmoothed[PApplet.parseInt(Ls[i])] * height / 1.5f);
+    line(0,height - spectrumSmoothed[PApplet.parseInt(Ls[i])] * height / 1.5f,0,height);
+    line(0,0,spectrumSmoothed[PApplet.parseInt(Ls[i])] * width / 1.5f,0);
+    line(width - spectrumSmoothed[PApplet.parseInt(Ls[i])] * width / 1.5f,0,width,0);
+    line(width,0,width,spectrumSmoothed[PApplet.parseInt(Ls[i])] * height / 1.5f);
+    line(width,height - spectrumSmoothed[PApplet.parseInt(Ls[i])] * height / 1.5f,width,height);
     popMatrix();
-
+    
     if (Lz[i] < - 4000) {
-      fill(255,0.3f * (Lz[i] + 4500)*volSmoothed+105);
-    }else{
-      fill(255,150*volSmoothed+105);
+      fill(255,0.3f * (Lz[i] + 4500) * volSmoothed + 105);
+    } else{
+      fill(255,150 * volSmoothed + 105);
     }
     noStroke();
     beginShape();
     curveVertex(0, height);
     curveVertex(0, height);
-    for(int a = 0; a < 100; a++){
-      curveVertex((a+1)*(width/100), avg(spectrumSmoothed,a*PApplet.parseInt(bands/100),a*PApplet.parseInt(bands/100)+PApplet.parseInt(bands/100))*(-1000)+height-5);
+    for (int a = 0; a < 100; a++) {
+      curveVertex((a + 1) * (width / 100), avg(spectrumSmoothed,a * PApplet.parseInt(bands / 100),a * PApplet.parseInt(bands / 100) + PApplet.parseInt(bands / 100)) * ( - 600) + height - 5);
     }
     curveVertex(width, height);
     curveVertex(width, height);
     endShape();
-
+    
     beginShape();
     curveVertex(width, 0);
     curveVertex(width, 0);
-    for(int a = 0; a < 100; a++){
-      curveVertex(width-(a+1)*(width/100), avg(spectrumSmoothed,a*PApplet.parseInt(bands/100),a*PApplet.parseInt(bands/100)+PApplet.parseInt(bands/100))*1000+5);
+    for (int a = 0; a < 100; a++) {
+      curveVertex(width - (a + 1) * (width / 100), avg(spectrumSmoothed,a * PApplet.parseInt(bands / 100),a * PApplet.parseInt(bands / 100) + PApplet.parseInt(bands / 100)) * 600 + 5);
     }
     curveVertex(0, 0);
     curveVertex(0, 0);
     endShape();
-
+    
     popMatrix();
-    Lz[i] += volSmoothed * 30 + spectrumSmoothed[0]*50;
-    if(Lz[i] > 1000){
+    Lz[i] += volSmoothed * 30 + spectrumSmoothed[0] * 50;
+    if (Lz[i] > 1000) {
       Lz = remove(Lz,i);
       Ls = remove(Ls,i);
     }
   }
   popMatrix();
-
+  
   //Cube Patricles
   for (int i = 0; i < floor(volSmoothed * 3 * random(1,1.8f)); i++) {
     Px = append(Px,random(0,width));
@@ -197,9 +206,9 @@ public void draw() {
     Prx = append(Prx,random(0,6.2831f));
     Pry = append(Pry,random(0,6.2831f));
     Prz = append(Prz,random(0,6.2831f));
-    SPrx = append(SPrx,random(-0.2f,0.2f));
-    SPry = append(SPry,random(-0.2f,0.2f));
-    SPrz = append(SPrz,random(-0.2f,0.2f));
+    SPrx = append(SPrx,random( - 0.2f,0.2f));
+    SPry = append(SPry,random( - 0.2f,0.2f));
+    SPrz = append(SPrz,random( - 0.2f,0.2f));
     Pa = append(Pa,random(10,35));
   }
   pushMatrix();
@@ -210,16 +219,16 @@ public void draw() {
     rotateY(Pry[i]);
     rotateZ(Prz[i]);
     if (Pz[i] < - 1500) {
-      fill(rgb(Px[i] / PApplet.parseFloat(width) * 360,0.3f * (Pz[i] + 2000)*volSmoothed+105));
+      fill(rgb(Px[i] / PApplet.parseFloat(width) * 360,0.3f * (Pz[i] + 2000) * volSmoothed + 105));
     } else{
-      fill(rgb(Px[i] / PApplet.parseFloat(width) * 360,150*volSmoothed+105));
+      fill(rgb(Px[i] / PApplet.parseFloat(width) * 360,150 * volSmoothed + 105));
     }
     if (BDR.isBeat()) {
       box(spectrumSmoothed[0] * Pa[i] * 5 + 4);
     } else{
-      box(spectrumSmoothed[0] * Pa[i]*3 + 4);
+      box(spectrumSmoothed[0] * Pa[i] * 3 + 4);
     }
-    Pz[i] += volSmoothed * 30 + spectrumSmoothed[0]*50;
+    Pz[i] += volSmoothed * 30 + spectrumSmoothed[0] * 50;
     Prx[i] += SPrx[i];
     Pry[i] += SPry[i];
     Prz[i] += SPrz[i];
@@ -241,7 +250,7 @@ public void draw() {
   }
   popMatrix();
   
-
+  
   mainBoxRx += spectrumSmoothed[PApplet.parseInt(15 / 100 * bands)] / 3;
   mainBoxRy += spectrumSmoothed[PApplet.parseInt(30 / 100 * bands)] / 2;
   mainBoxRz += spectrumSmoothed[PApplet.parseInt(45 / 100 * bands)];
@@ -253,52 +262,52 @@ public void draw() {
   rotateZ(mainBoxRz);
   stroke(0,0,200);
   strokeWeight(3);
-  fill(0,0,volSmoothed*255);
-  box(volSmoothed * 100 + 60);
-
+  fill(0,0,volSmoothed * 255);
+  box(volSmoothed * 100 + 40);
   
-  for(int i = 0; i < 4; i++){
+  
+  for (int i = 0; i < 4; i++) {
     pushMatrix();
-    rotateY(radians(i*90));
+    rotateY(radians(i * 90));
     rectMode(CENTER);
-    if(BDR.isBeat()){
-      translate(0,0,volSmoothed * 50 + 75 + spectrumSmoothed[0]*500);
-    }else{
-      translate(0,0,volSmoothed * 50 + 75 + spectrumSmoothed[0]*200);
+    if (BDR.isBeat()) {
+      translate(0,0,volSmoothed * 50 + 55 + spectrumSmoothed[0] * 500);
+    } else{
+      translate(0,0,volSmoothed * 50 + 55 + spectrumSmoothed[0] * 200);
     }
     stroke(255,0,0);
-    fill(255,50,50,volSmoothed*255);
-    rect(0,0,volSmoothed * 100 + 55,volSmoothed * 100 + 55);
+    fill(255,50,50,volSmoothed * 255);
+    rect(0,0,volSmoothed * 100 + 35,volSmoothed * 100 + 35);
     rectMode(CORNER);
     popMatrix();
   }
   pushMatrix();
   rotateX(radians(90));
   rectMode(CENTER);
-  if(BDR.isBeat()){
-    translate(0,0,volSmoothed * 50 + 75 + spectrumSmoothed[0]*500);
-  }else{
-    translate(0,0,volSmoothed * 50 + 75 + spectrumSmoothed[0]*200);
+  if (BDR.isBeat()) {
+    translate(0,0,volSmoothed * 50 + 55 + spectrumSmoothed[0] * 500);
+  } else{
+    translate(0,0,volSmoothed * 50 + 55 + spectrumSmoothed[0] * 200);
   }
   stroke(255,0,0);
-  fill(255,50,50,volSmoothed*255);
-  rect(0,0,volSmoothed * 100 + 55,volSmoothed * 100 + 55);
+  fill(255,50,50,volSmoothed * 255);
+  rect(0,0,volSmoothed * 100 + 35,volSmoothed * 100 + 35);
   rectMode(CORNER);
   popMatrix();
   pushMatrix();
-  rotateX(radians(-90));
+  rotateX(radians( - 90));
   rectMode(CENTER);
-  if(BDR.isBeat()){
-    translate(0,0,volSmoothed * 50 + 75 + spectrumSmoothed[0]*500);
-  }else{
-    translate(0,0,volSmoothed * 50 + 75 + spectrumSmoothed[0]*200);
+  if (BDR.isBeat()) {
+    translate(0,0,volSmoothed * 50 + 55 + spectrumSmoothed[0] * 500);
+  } else{
+    translate(0,0,volSmoothed * 50 + 55 + spectrumSmoothed[0] * 200);
   }
   stroke(255,0,0);
-  fill(255,50,50,volSmoothed*255);
-  rect(0,0,volSmoothed * 100 + 55,volSmoothed * 100 + 55);
+  fill(255,50,50,volSmoothed * 255);
+  rect(0,0,volSmoothed * 100 + 35,volSmoothed * 100 + 35);
   rectMode(CORNER);
   popMatrix();
-
+  
   popMatrix();
   
   //background spectrum left
@@ -307,7 +316,7 @@ public void draw() {
   rotateY(radians(60));
   noStroke();
   fill(255);
-  for (int i = 0; i < bands; i++) {
+  for (int i = 0; i < bands; i+=PApplet.parseInt(bands/150)) {
     fill(rgb(360 / PApplet.parseFloat(bands) * i,255));
     rect(PApplet.parseFloat(width) / 3 / PApplet.parseFloat(bands) * i,0,PApplet.parseFloat(width) / 3 / PApplet.parseFloat(bands),spectrumSmoothed[i] * (height / 2));
     rect(PApplet.parseFloat(width) / 3 / PApplet.parseFloat(bands) * i,0,PApplet.parseFloat(width) / 3 / PApplet.parseFloat(bands),spectrumSmoothed[i] * (height / ( -2)));
@@ -324,7 +333,7 @@ public void draw() {
   rotateY(radians(120));
   noStroke();
   fill(255);
-  for (int i = 0; i < bands; i++) {
+  for (int i = 0; i < bands; i+=PApplet.parseInt(bands/150)) {
     fill(rgb(360 / PApplet.parseFloat(bands) * i,255));
     rect(PApplet.parseFloat(width) / 3 / PApplet.parseFloat(bands) * i,0,PApplet.parseFloat(width) / 3 / PApplet.parseFloat(bands),spectrumSmoothed[i] * (height / 2));
     rect(PApplet.parseFloat(width) / 3 / PApplet.parseFloat(bands) * i,0,PApplet.parseFloat(width) / 3 / PApplet.parseFloat(bands),spectrumSmoothed[i] * (height / ( -2)));
@@ -341,10 +350,6 @@ public void draw() {
   }
   else{
     brightness -= 5;
-  }
-
-  if(endDegree >= 180){
-      exit();
   }
 }
 
