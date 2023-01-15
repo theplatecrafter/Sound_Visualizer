@@ -16,29 +16,7 @@ Amplitude amp;
 //BeatDetector
 BeatDetector BDR;
 
-void setup() {
-  fullScreen(P3D);
-  background(0);
-  
-  //file
-  file = new SoundFile(this, "Eclipse.mp3");
-  
-  //fft
-  fft = new FFT(this,bands);
-  fft.input(file);
-  
-  //Amplitude
-  amp = new Amplitude(this);
-  amp.input(file);
-  
-  //BeatDetector
-  BDR = new BeatDetector(this);
-  BDR.input(file);
-  
-  //play SoundFile
-  file.play();
-}      
-
+//other vars
 float[] spectrumSmoothed = new float[bands];
 float volSmoothed = 0;
 
@@ -59,7 +37,38 @@ float[] SPry = new float[0];
 float[] SPrz = new float[0];
 float[] Pa = new float[0];
 
-float[] Lz = {0,-500,-1000,-1500,-2000,-2500,-3000,-3500,-4000,-4500};
+float[] Lz = new float[0];
+float[] Ls = new float[0];
+
+void setup() {
+
+  for(int i = 0; i < 10; i++){
+    Lz = append(Lz,i*(-500));
+    Ls = append(Ls,int(i*(bands/171)));
+  }
+
+  fullScreen(P3D);
+  background(0);
+  
+  //file
+  file = new SoundFile(this, "WouldntChangeIt.mp3");
+  
+  //fft
+  fft = new FFT(this,bands);
+  fft.input(file);
+  
+  //Amplitude
+  amp = new Amplitude(this);
+  amp.input(file);
+  
+  //BeatDetector
+  BDR = new BeatDetector(this);
+  BDR.input(file);
+  
+  //play SoundFile
+  file.play();
+}      
+
 
 void draw() { 
   background(brightness);
@@ -75,6 +84,11 @@ void draw() {
   pushMatrix();
   if(Lz[Lz.length-1] > -4000){
     Lz = append(Lz,-4500);
+    if(Ls[Ls.length-1]/(bands/171) > 10){
+      Ls = append(Ls,int(0));
+    }else{
+      Ls = append(Ls,int(Ls[Ls.length-1]+(bands/171)));
+    }
   }
   for(int i = 0; i < Lz.length; i++){
     pushMatrix();
@@ -87,6 +101,29 @@ void draw() {
     strokeWeight(spectrumSmoothed[0]*13.35+3);
     noFill();
     rect(0,0,width,height);
+
+    pushMatrix();
+    translate(0,0,250);
+    if (Lz[i] < - 4000) {
+      stroke(volSmoothed*100,0.51 * (Lz[i] + 4500));
+    }else{
+      stroke(volSmoothed*100);
+    }
+    rect(0,0,width,height);
+    if (Lz[i] < - 4000) {
+      stroke(rgb((Lz[i]+4500)/5500*360,0.51 * (Lz[i] + 4500)));
+    }else{
+      stroke(rgb((Lz[i]+4500)/5500*360,255));
+    }
+    line(0,height,spectrumSmoothed[int(Ls[i])]*width/1.5,height);
+    line(width-spectrumSmoothed[int(Ls[i])]*width/1.5,height,width,height);
+    line(0,0,0,spectrumSmoothed[int(Ls[i])]*height/1.5);
+    line(0,height-spectrumSmoothed[int(Ls[i])]*height/1.5,0,height);
+    line(0,0,spectrumSmoothed[int(Ls[i])]*width/1.5,0);
+    line(width-spectrumSmoothed[int(Ls[i])]*width/1.5,0,width,0);
+    line(width,0,width,spectrumSmoothed[int(Ls[i])]*height/1.5);
+    line(width,height-spectrumSmoothed[int(Ls[i])]*height/1.5,width,height);
+    popMatrix();
 
     if (Lz[i] < - 4000) {
       fill(255,0.51 * (Lz[i] + 4500));
@@ -118,6 +155,7 @@ void draw() {
     Lz[i] += volSmoothed*20;
     if(Lz[i] > 1000){
       Lz = remove(Lz,i);
+      Ls = remove(Ls,i);
     }
   }
   popMatrix();
@@ -242,6 +280,9 @@ void draw() {
   else{
     brightness -= 5;
   }
+
+  //saveFrame
+
 }
 
 color rgb(float hue,float opacity) {
