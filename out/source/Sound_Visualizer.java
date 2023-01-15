@@ -92,18 +92,19 @@ public void setup() {
   //BeatDetector
   BDR = new BeatDetector(this);
   BDR.input(file);
+
+  //file.play();
 }      
 
 public void draw() { 
   drawCount++;
-  if (drawCount == lastCount) {
+  if (drawCount >= lastCount) {
     exit();
   }
   
   background(brightness);
   
-  file.cue(drawCount * (1 / FPS));
-  
+  file.playFor(1/FPS);
   
   
   //sound analyze

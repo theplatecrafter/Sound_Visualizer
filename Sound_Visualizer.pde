@@ -6,7 +6,7 @@ SoundFile file;
 
 //fft
 FFT fft;
-int bands = 1024;
+int bands = 512;
 float[] spectrum = new float[bands];
 
 //amplitude
@@ -73,18 +73,19 @@ void setup() {
   //BeatDetector
   BDR = new BeatDetector(this);
   BDR.input(file);
+
+  //file.play();
 }      
 
 void draw() { 
   drawCount++;
-  if (drawCount == lastCount) {
+  if (drawCount >= lastCount) {
     exit();
   }
   
   background(brightness);
   
-  file.cue(drawCount * (1 / FPS));
-  
+  file.playFor(1/FPS,drawCount * (1 / FPS));
   
   
   //sound analyze
@@ -176,7 +177,7 @@ void draw() {
   popMatrix();
   
   //Cube Patricles
-  for (int i = 0; i < floor(volSmoothed * 3 * random(1,1.8)); i++) {
+  for (int i = 0; i < floor(volSmoothed * 2 * random(1,1.8)); i++) {
     Px = append(Px,random(0,width));
     Py = append(Py,random(0,height));
     Pz = append(Pz, -2000);
@@ -239,7 +240,7 @@ void draw() {
   rotateZ(mainBoxRz);
   stroke(0,0,200);
   strokeWeight(3);
-  fill(0,0,volSmoothed * 255);
+  fill(0);
   box(volSmoothed * 100 + 40);
   
   
