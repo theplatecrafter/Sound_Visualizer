@@ -1,20 +1,13 @@
 //Library import
-import processing.sound.*;
+import ddf.minim.*;
+import ddf.minim.analysis.*
 
-//SoundFile
-SoundFile file;
-
-//fft
+Minim minim;
+AudioPlayer song;
 FFT fft;
+BeatDetect beat;
+
 int bands = 512;
-float[] spectrum = new float[bands];
-
-//amplitude
-float vol;
-Amplitude amp;
-
-//BeatDetector
-BeatDetector BDR;
 
 //other vars
 float[] spectrumSmoothed = new float[bands];
@@ -55,24 +48,12 @@ void setup() {
   fullScreen(P3D);
   background(0);
   
-  //file
-  file = new SoundFile(this, "IFAL.mp3");
-  
-  //fft
-  fft = new FFT(this,bands);
-  fft.input(file);
-  
-  //Amplitude
-  amp = new Amplitude(this);
-  amp.input(file);
-  
-  //BeatDetector
-  BDR = new BeatDetector(this);
-  BDR.input(file);
-  
-  //play SoundFile
-  file.play();
-  delayMS = millis() / 1000;
+  minim = new Minim(this);
+  song = minim.loadFile("./data/HS.mp3",bands*2);
+  fft = new FFT(song.bufferSize(),song.sampleRate());
+  beat = new BeatDetect();
+  song.play();
+  delayMS = millis()/1000;
 }      
 
 void draw() { 
@@ -92,10 +73,11 @@ void draw() {
   }
 
   //sound analyze
-  fft.analyze(spectrum);
-  vol = amp.analyze();
+  fft.forward(song.mix);
+  beat.detect(song.mix);
+  vol = 0.5;
   for (int i = 0; i < bands; i++) {
-    spectrumSmoothed[i] += (spectrum[i] - spectrumSmoothed[i]) / 2;
+    spectrumSmoothed[i] += (fft.getBand(i)/bands - spectrumSmoothed[i]) / 2;
   }
   volSmoothed += (vol - volSmoothed) / 2;
 
@@ -204,7 +186,7 @@ void draw() {
     } else{
       fill(rgb(Px[i] / float(width) * 360,150 * volSmoothed + 105));
     }
-    if (BDR.isBeat()) {
+    if (beat.isKick()) {
       box(spectrumSmoothed[0] * Pa[i] * 5 + 4);
     } else{
       box(spectrumSmoothed[0] * Pa[i] * 3 + 4);
@@ -251,7 +233,7 @@ void draw() {
     pushMatrix();
     rotateY(radians(i * 90));
     rectMode(CENTER);
-    if (BDR.isBeat()) {
+    if (beat.isKick()) {
       translate(0,0,volSmoothed * 50 + 55 + spectrumSmoothed[0] * 500);
     } else{
       translate(0,0,volSmoothed * 50 + 55 + spectrumSmoothed[0] * 200);
@@ -265,7 +247,7 @@ void draw() {
   pushMatrix();
   rotateX(radians(90));
   rectMode(CENTER);
-  if (BDR.isBeat()) {
+  if (beat.isKick()) {
     translate(0,0,volSmoothed * 50 + 55 + spectrumSmoothed[0] * 500);
   } else{
     translate(0,0,volSmoothed * 50 + 55 + spectrumSmoothed[0] * 200);
@@ -278,7 +260,7 @@ void draw() {
   pushMatrix();
   rotateX(radians( - 90));
   rectMode(CENTER);
-  if (BDR.isBeat()) {
+  if (beat.isKick()) {
     translate(0,0,volSmoothed * 50 + 55 + spectrumSmoothed[0] * 500);
   } else{
     translate(0,0,volSmoothed * 50 + 55 + spectrumSmoothed[0] * 200);
@@ -326,8 +308,8 @@ void draw() {
   popMatrix();
   
   //brightness controller
-  if (BDR.isBeat()) {
-    brightness = spectrum[1 / 100 * bands] * 200;
+  if (beat.isKick()) {
+    brightness = spectrumSmoothed[1 / 100 * bands] * 200;
   }
   else{
     brightness -= 5;
