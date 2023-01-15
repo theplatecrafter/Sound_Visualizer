@@ -25,7 +25,7 @@ SoundFile file;
 
 //fft
 FFT fft;
-int bands = 1024;
+int bands = 512;
 float[] spectrum = new float[bands];
 
 //amplitude
@@ -59,15 +59,18 @@ float[] Pa = new float[0];
 float[] Lz = new float[0];
 float[] Ls = new float[0];
 
-float delayMS;
 
-//camera motion
-float camZ = -2000;
+//draw counter
+int drawCount = 0;
+int lastCount;
+
+//target FPS
+float FPS = 30;
 
 public void setup() {
   
   for (int i = 0; i < 10; i++) {
-    Lz = append(Lz,i * ( - 500));
+    Lz = append(Lz,i * ( -500));
     Ls = append(Ls,PApplet.parseInt(i * (bands / 171)));
   }
   
@@ -75,7 +78,8 @@ public void setup() {
   background(0);
   
   //file
-  file = new SoundFile(this, "whole.mp3");
+  file = new SoundFile(this, "IFAL.mp3");
+  lastCount = PApplet.parseInt(FPS * file.duration());
   
   //fft
   fft = new FFT(this,bands);
@@ -88,28 +92,20 @@ public void setup() {
   //BeatDetector
   BDR = new BeatDetector(this);
   BDR.input(file);
-  
-  //play SoundFile
-  file.play();
-  delayMS = millis() / 1000;
 }      
 
 public void draw() { 
-  background(brightness);
-
-  //camera
-  camera(width/2.0f, height/2.0f, camZ, width/2.0f, height/2.0f, camZ-1, 0, 1, 0);
-  
-  //ending & camera
-  if (millis() / 1000 - delayMS > file.duration()) {
-    camZ += (-4000)/40;
-    if(PApplet.parseInt(camZ) <= -4000){
-      exit();
-    }
-  }else{
-    camZ += (((height/2.0f) / tan(PI*30.0f / 180.0f))-camZ)/20;
+  drawCount++;
+  if (drawCount == lastCount) {
+    exit();
   }
-
+  
+  background(brightness);
+  
+  file.cue(drawCount * (1 / FPS));
+  
+  
+  
   //sound analyze
   fft.analyze(spectrum);
   vol = amp.analyze();
@@ -117,11 +113,11 @@ public void draw() {
     spectrumSmoothed[i] += (spectrum[i] - spectrumSmoothed[i]) / 2;
   }
   volSmoothed += (vol - volSmoothed) / 2;
-
+  
   //3D lines
   pushMatrix();
   if (Lz[Lz.length - 1] > - 4000) {
-    Lz = append(Lz, - 4500);
+    Lz = append(Lz, -4500);
     if (Ls[Ls.length - 1] / (bands / 171) > 10) {
       Ls = append(Ls,PApplet.parseInt(0));
     } else{
@@ -173,7 +169,7 @@ public void draw() {
     curveVertex(0, height);
     curveVertex(0, height);
     for (int a = 0; a < 100; a++) {
-      curveVertex((a + 1) * (width / 100), avg(spectrumSmoothed,a * PApplet.parseInt(bands / 100),a * PApplet.parseInt(bands / 100) + PApplet.parseInt(bands / 100)) * ( - 600) + height - 5);
+      curveVertex((a + 1) * (width / 100), avg(spectrumSmoothed,a * PApplet.parseInt(bands / 100),a * PApplet.parseInt(bands / 100) + PApplet.parseInt(bands / 100)) * ( -600) + height - 5);
     }
     curveVertex(width, height);
     curveVertex(width, height);
@@ -206,9 +202,9 @@ public void draw() {
     Prx = append(Prx,random(0,6.2831f));
     Pry = append(Pry,random(0,6.2831f));
     Prz = append(Prz,random(0,6.2831f));
-    SPrx = append(SPrx,random( - 0.2f,0.2f));
-    SPry = append(SPry,random( - 0.2f,0.2f));
-    SPrz = append(SPrz,random( - 0.2f,0.2f));
+    SPrx = append(SPrx,random( -0.2f,0.2f));
+    SPry = append(SPry,random( -0.2f,0.2f));
+    SPrz = append(SPrz,random( -0.2f,0.2f));
     Pa = append(Pa,random(10,35));
   }
   pushMatrix();
@@ -295,7 +291,7 @@ public void draw() {
   rectMode(CORNER);
   popMatrix();
   pushMatrix();
-  rotateX(radians( - 90));
+  rotateX(radians( -90));
   rectMode(CENTER);
   if (BDR.isBeat()) {
     translate(0,0,volSmoothed * 50 + 55 + spectrumSmoothed[0] * 500);
@@ -316,7 +312,7 @@ public void draw() {
   rotateY(radians(60));
   noStroke();
   fill(255);
-  for (int i = 0; i < bands; i+=PApplet.parseInt(bands/150)) {
+  for (int i = 0; i < bands; i += PApplet.parseInt(bands / 150)) {
     fill(rgb(360 / PApplet.parseFloat(bands) * i,255));
     rect(PApplet.parseFloat(width) / 3 / PApplet.parseFloat(bands) * i,0,PApplet.parseFloat(width) / 3 / PApplet.parseFloat(bands),spectrumSmoothed[i] * (height / 2));
     rect(PApplet.parseFloat(width) / 3 / PApplet.parseFloat(bands) * i,0,PApplet.parseFloat(width) / 3 / PApplet.parseFloat(bands),spectrumSmoothed[i] * (height / ( -2)));
@@ -333,7 +329,7 @@ public void draw() {
   rotateY(radians(120));
   noStroke();
   fill(255);
-  for (int i = 0; i < bands; i+=PApplet.parseInt(bands/150)) {
+  for (int i = 0; i < bands; i += PApplet.parseInt(bands / 150)) {
     fill(rgb(360 / PApplet.parseFloat(bands) * i,255));
     rect(PApplet.parseFloat(width) / 3 / PApplet.parseFloat(bands) * i,0,PApplet.parseFloat(width) / 3 / PApplet.parseFloat(bands),spectrumSmoothed[i] * (height / 2));
     rect(PApplet.parseFloat(width) / 3 / PApplet.parseFloat(bands) * i,0,PApplet.parseFloat(width) / 3 / PApplet.parseFloat(bands),spectrumSmoothed[i] * (height / ( -2)));
@@ -351,6 +347,9 @@ public void draw() {
   else{
     brightness -= 5;
   }
+  
+  saveFrame("./video/######.png");
+  
 }
 
 //hue, opacity to rgb
