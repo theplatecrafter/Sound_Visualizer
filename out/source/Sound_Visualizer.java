@@ -25,7 +25,7 @@ SoundFile file;
 
 //fft
 FFT fft;
-int bands = 1024;
+int bands = 512;
 float[] spectrum = new float[bands];
 
 //amplitude
@@ -75,7 +75,7 @@ public void setup() {
   background(0);
   
   //file
-  file = new SoundFile(this, "whole.mp3");
+  file = new SoundFile(this, "IFAL.mp3");
   
   //fft
   fft = new FFT(this,bands);
@@ -199,7 +199,7 @@ public void draw() {
   popMatrix();
   
   //Cube Patricles
-  for (int i = 0; i < floor(volSmoothed * 3 * random(1,1.8f)); i++) {
+  for (int i = 0; i < floor(volSmoothed * 2 * random(1,1.8f)); i++) {
     Px = append(Px,random(0,width));
     Py = append(Py,random(0,height));
     Pz = append(Pz, -2000);
@@ -262,7 +262,7 @@ public void draw() {
   rotateZ(mainBoxRz);
   stroke(0,0,200);
   strokeWeight(3);
-  fill(0,0,volSmoothed * 255);
+  fill(0);
   box(volSmoothed * 100 + 40);
   
   
