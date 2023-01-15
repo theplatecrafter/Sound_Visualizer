@@ -75,7 +75,6 @@ void setup() {
 
 void draw() { 
   background(brightness);
-  
 
   //sound analyze
   fft.analyze(spectrum);
@@ -85,6 +84,7 @@ void draw() {
   }
   volSmoothed += (vol - volSmoothed) / 2;
 
+  //ending
   if(millis()/1000-delayMS > file.duration()){
     for(int i = 0; i < Pz.length; i++){
       Pz[i] -= 50;
@@ -97,6 +97,7 @@ void draw() {
     }
   }
 
+  //3D lines
   pushMatrix();
   if(Lz[Lz.length-1] > -4000){
     Lz = append(Lz,-4500);
@@ -176,6 +177,7 @@ void draw() {
   }
   popMatrix();
 
+  //Cube Patricles
   for (int i = 0; i < floor(volSmoothed * 2 * random(1,1.8)); i++) {
     Px = append(Px,random(0,width));
     Py = append(Py,random(0,height));
@@ -233,6 +235,8 @@ void draw() {
   }
   popMatrix();
   
+
+  //Main box
   pushMatrix();
   translate(width / 2,height / 2,100);
   mainBoxRx += spectrumSmoothed[int(15 / 100 * bands)] / 3;
@@ -247,6 +251,7 @@ void draw() {
   box(volSmoothed * 100 + 150);
   popMatrix();
   
+  //small box
   pushMatrix();
   translate(width / 2,height / 2,0);
   rotateX(mainBoxRy);
@@ -258,6 +263,7 @@ void draw() {
   box(volSmoothed * 100 + 70);
   popMatrix();
   
+  //background spectrum left
   pushMatrix();
   translate(0,height / 2,0);
   rotateY(radians(60));
@@ -274,6 +280,7 @@ void draw() {
   }
   popMatrix();
   
+  //background spectrum right
   pushMatrix();
   translate(width,height / 2,0);
   rotateY(radians(120));
@@ -290,6 +297,7 @@ void draw() {
   }
   popMatrix();
   
+  //brightness controller
   if (BDR.isBeat()) {
     brightness = spectrum[1 / 100 * bands] * 200;
   }
@@ -297,10 +305,10 @@ void draw() {
     brightness -= 5;
   }
 
-  //saveFrame
 
 }
 
+//hue, opacity to rgb
 color rgb(float hue,float opacity) {
   float X = 1 - abs((hue / 60) % 2 - 1);
   float[] rgbOUT = new float[3];
@@ -327,6 +335,7 @@ color rgb(float hue,float opacity) {
   return color(rgbOUT[0],rgbOUT[1],rgbOUT[2],opacity);
 }
 
+//remove a certain index from array
 float[] remove(float[] input,int index) {
   float[] output = new float[0];
   for (int i = 0; i < input.length; i++) {
@@ -337,6 +346,7 @@ float[] remove(float[] input,int index) {
   return output;
 }
 
+//average of an array
 float avg(float[] input,int startIndex,int endIndex) {
   float output = 0;
   for (int i = startIndex; i <= endIndex; i++) {
