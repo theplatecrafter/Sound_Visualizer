@@ -24,6 +24,12 @@ float[] rightChannel;
 int lastCount;
 int renderCount = 0;
 
+//Batch stuff
+float FPS = 30;
+float framePeriod = 1.0 / FPS;
+float samplesPerFrame;
+
+
 void setup(){
   size(1024,800,P3D);
   //fullScreen(P3D);
@@ -41,11 +47,8 @@ void setup(){
   float samplesPerFrame = framePeriod * sampleRate;
   
   int N = song.getBufferSize();
-  float songDuration = N / sampleRate;
+  songDuration = N / sampleRate;
   lastCount = int(N / samplesPerFrame);
-
-
-  println(song.getChannelCount());
 }
 
 void draw(){
@@ -53,7 +56,7 @@ void draw(){
 
   //analysis batch
   if(batch){
-
+    
   }
 
   //check end
