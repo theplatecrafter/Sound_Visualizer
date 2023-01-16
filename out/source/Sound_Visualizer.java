@@ -58,7 +58,7 @@ public void setup(){
 
   minim = new Minim(this);
   song = new MultiChannelBuffer(1,1);
-  float sampleRate = minim.loadFileIntoBuffer("shortTest.mp3", song);
+  float sampleRate = minim.loadFileIntoBuffer("./data/HS.mp3", song);
 
   leftChannel = song.getChannel(0);
   rightChannel = song.getChannel(1);
@@ -66,16 +66,13 @@ public void setup(){
   Lfft = new FFT(bands * 2, sampleRate);
   Rfft = new FFT(bands * 2, sampleRate);
   float samplesPerFrame = framePeriod * sampleRate;
-  
+
   int N = song.getBufferSize();
   lastCount = PApplet.parseInt(N / samplesPerFrame);
-
-  println(song.getBufferSize());
 }
 
 public void draw(){
   renderCount++;
-
   //analysis batch
   if(batch){
     int sampleIndex = PApplet.parseInt(renderCount * samplesPerFrame);
