@@ -30,6 +30,7 @@ FFT fft;
 BeatDetect beat;
 int bands = 512;
 float vol = 0;
+float[] spectrum = new float[bands];
 
 //other vars
 float[] spectrumSmoothed = new float[bands];
@@ -77,7 +78,7 @@ public void setup() {
   
   minim = new Minim(this);
   song = new MultiChannelBuffer(1,1);
-  float sampleRate = minim.loadFileIntoBuffer("HS.mp3", song);
+  float sampleRate = minim.loadFileIntoBuffer("shortTest.mp3", song);
   leftChannel = song.getChannel(0);
   fft = new FFT(bands * 2, sampleRate);
   samplesPerFrame = framePeriod * sampleRate;
@@ -105,11 +106,15 @@ public void draw() {
   //sound analyze
   int sampleIndex = PApplet.parseInt(drawCount * samplesPerFrame);
   fft.forward(leftChannel,sampleIndex);
-  vol = 0.5f;
+
   
   for (int i = 0; i < bands; i++) {
     spectrumSmoothed[i] += (fft.getBand(i) / bands - spectrumSmoothed[i]) / 2;
+    spectrum[i] = fft.getBand(i);
   }
+  beat.detect(spectrum);
+
+  vol = avg(spectrum,0,bands-1)/bands*10;
   volSmoothed += (vol - volSmoothed) / 2;
   
   
@@ -219,7 +224,7 @@ public void draw() {
     } else{
       fill(rgb(Px[i] / PApplet.parseFloat(width) * 360,150 * volSmoothed + 105));
     }
-    if (false) {
+    if (beat.isKick()) {
       box(spectrumSmoothed[0] * Pa[i] * 5 + 4);
     } else{
       box(spectrumSmoothed[0] * Pa[i] * 3 + 4);
@@ -266,7 +271,7 @@ public void draw() {
     pushMatrix();
     rotateY(radians(i * 90));
     rectMode(CENTER);
-    if (false) {
+    if (beat.isKick()) {
       translate(0,0,volSmoothed * 50 + 55 + spectrumSmoothed[0] * 500);
     } else{
       translate(0,0,volSmoothed * 50 + 55 + spectrumSmoothed[0] * 200);
@@ -280,7 +285,7 @@ public void draw() {
   pushMatrix();
   rotateX(radians(90));
   rectMode(CENTER);
-  if (false) {
+  if (beat.isKick()) {
     translate(0,0,volSmoothed * 50 + 55 + spectrumSmoothed[0] * 500);
   } else{
     translate(0,0,volSmoothed * 50 + 55 + spectrumSmoothed[0] * 200);
@@ -293,7 +298,7 @@ public void draw() {
   pushMatrix();
   rotateX(radians( -90));
   rectMode(CENTER);
-  if (false) {
+  if (beat.isKick()) {
     translate(0,0,volSmoothed * 50 + 55 + spectrumSmoothed[0] * 500);
   } else{
     translate(0,0,volSmoothed * 50 + 55 + spectrumSmoothed[0] * 200);
@@ -341,7 +346,7 @@ public void draw() {
   popMatrix();
   
   //brightness controller
-  if (false) {
+  if (beat.isKick()) {
     brightness = spectrumSmoothed[1 / 100 * bands] * 200;
   }
   else{
