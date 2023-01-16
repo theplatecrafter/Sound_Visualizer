@@ -4,7 +4,7 @@ import ddf.minim.ugens.*;
 
 ///developer stuff
 boolean debugMode = false;
-boolean batch = false;
+boolean batch = true;
 ///
 
 //minim stuff
@@ -15,10 +15,10 @@ FFT Lfft;
 FFT Rfft;
 
 //minim output vars
-float[] spectrum = new float[bands];
-
 float[] leftChannel;
 float[] rightChannel;
+float[] leftFFT = new float[bands];
+float[] rightFFT = new float[bands];
 
 //other vars
 int lastCount;
@@ -47,8 +47,9 @@ void setup(){
   float samplesPerFrame = framePeriod * sampleRate;
   
   int N = song.getBufferSize();
-  songDuration = N / sampleRate;
   lastCount = int(N / samplesPerFrame);
+
+  println(song.getBufferSize());
 }
 
 void draw(){
@@ -56,7 +57,14 @@ void draw(){
 
   //analysis batch
   if(batch){
-    
+    int sampleIndex = int(renderCount * samplesPerFrame);
+    Lfft.forward(leftChannel,sampleIndex);
+    Rfft.forward(rightChannel,sampleIndex);
+
+    for(int i = 0; i < bands; i++){
+      leftFFT[i] = Lfft.getBand(i);
+      rightFFT[i] = Rfft.getBand(i);
+    }
   }
 
   //check end
@@ -65,12 +73,12 @@ void draw(){
   }
 
   //draw
-  render(spectrum);
+  println(leftFFT);
 }
 
-void render(float[] spec){
+void render(float[] Lspec,float[] Rspec){
   background(0);
   stroke(255,0,0);
   noFill();
-  ellipse(width/2,height/2,spec[0]*100+40,spec[0]*100+40);
+  ellipse(width/2,height/2,Lspec[0]*100+40,Rspec[0]*100+40);
 }

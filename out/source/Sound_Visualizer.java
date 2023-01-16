@@ -25,7 +25,7 @@ public class Sound_Visualizer extends PApplet {
 
 ///developer stuff
 boolean debugMode = false;
-boolean batch = false;
+boolean batch = true;
 ///
 
 //minim stuff
@@ -36,14 +36,20 @@ FFT Lfft;
 FFT Rfft;
 
 //minim output vars
-float[] spectrum = new float[bands];
-
 float[] leftChannel;
 float[] rightChannel;
+float[] leftFFT = new float[bands];
+float[] rightFFT = new float[bands];
 
 //other vars
 int lastCount;
 int renderCount = 0;
+
+//Batch stuff
+float FPS = 30;
+float framePeriod = 1.0f / FPS;
+float samplesPerFrame;
+
 
 public void setup(){
   /* size commented out by preprocessor */;
@@ -59,14 +65,12 @@ public void setup(){
 
   Lfft = new FFT(bands * 2, sampleRate);
   Rfft = new FFT(bands * 2, sampleRate);
-  samplesPerFrame = framePeriod * sampleRate;
+  float samplesPerFrame = framePeriod * sampleRate;
   
   int N = song.getBufferSize();
-  float songDuration = N / sampleRate;
   lastCount = PApplet.parseInt(N / samplesPerFrame);
 
-
-  println(song.getChannelCount());
+  println(song.getBufferSize());
 }
 
 public void draw(){
@@ -74,7 +78,14 @@ public void draw(){
 
   //analysis batch
   if(batch){
+    int sampleIndex = PApplet.parseInt(renderCount * samplesPerFrame);
+    Lfft.forward(leftChannel,sampleIndex);
+    Rfft.forward(rightChannel,sampleIndex);
 
+    for(int i = 0; i < bands; i++){
+      leftFFT[i] = Lfft.getBand(i);
+      rightFFT[i] = Rfft.getBand(i);
+    }
   }
 
   //check end
@@ -83,14 +94,14 @@ public void draw(){
   }
 
   //draw
-  render(spectrum);
+  println(leftFFT);
 }
 
-public void render(float[] spec){
+public void render(float[] Lspec,float[] Rspec){
   background(0);
   stroke(255,0,0);
   noFill();
-  ellipse(width/2,height/2,spec[0]*100+40,spec[0]*100+40);
+  ellipse(width/2,height/2,Lspec[0]*100+40,Rspec[0]*100+40);
 }
 
 
