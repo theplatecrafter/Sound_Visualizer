@@ -1,5 +1,6 @@
 import ddf.minim.*;
 import ddf.minim.analysis.*;
+import ddf.minim.ugens.*;
 
 ///developer stuff
 boolean debugMode = false;
@@ -15,14 +16,15 @@ MultiChannelBuffer song;
 float[] spectrum = new float[bands];
 
 void setup(){
-  if(debugMode){
-    size(1024,512,P3D);
-  }else{
-    fullScreen(P3D);
-  }
+  size(1024,800,P3D);
+  //fullScreen(P3D);
 
+  
   minim = new Minim(this);
-  song = minim.MultiChannelBuffer(1,1);
+  song = new MultiChannelBuffer(1000,1);
+  float sampleRate = minim.loadFileIntoBuffer("shortTest.mp3",song);
+
+  println(song.getChannelCount());
 }
 
 void draw(){

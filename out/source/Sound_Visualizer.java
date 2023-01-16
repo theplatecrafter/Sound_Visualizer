@@ -6,6 +6,7 @@ import processing.opengl.*;
 
 import ddf.minim.*;
 import ddf.minim.analysis.*;
+import ddf.minim.ugens.*;
 
 import java.util.HashMap;
 import java.util.ArrayList;
@@ -18,12 +19,55 @@ import java.io.IOException;
 
 public class Sound_Visualizer extends PApplet {
 
-  public void setup() {
 
 
 
-    noLoop();
+
+///developer stuff
+boolean debugMode = false;
+boolean batch = false;
+///
+
+//minim stuff
+int bands = 1024;
+Minim minim;
+MultiChannelBuffer song;
+
+//minim output vars
+float[] spectrum = new float[bands];
+
+public void setup(){
+  /* size commented out by preprocessor */;
+  //fullScreen(P3D);
+
+  
+  minim = new Minim(this);
+  song = new MultiChannelBuffer(1000,1);
+  float sampleRate = minim.loadFileIntoBuffer("shortTest.mp3",song);
+
+  println(song.getChannelCount());
+}
+
+public void draw(){
+  //analysis batch
+  if(batch){
+
   }
+
+
+  //draw
+  render(spectrum);
+}
+
+public void render(float[] spec){
+  background(0);
+  stroke(255,0,0);
+  noFill();
+  ellipse(width/2,height/2,spec[0]*100+40,spec[0]*100+40);
+}
+
+
+  public void settings() { size(1024, 512, P3D); }
 
   static public void main(String[] passedArgs) {
     String[] appletArgs = new String[] { "Sound_Visualizer" };
