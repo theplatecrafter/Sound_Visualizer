@@ -32,28 +32,55 @@ boolean batch = false;
 int bands = 1024;
 Minim minim;
 MultiChannelBuffer song;
+FFT Lfft;
+FFT Rfft;
 
 //minim output vars
 float[] spectrum = new float[bands];
+
+float[] leftChannel;
+float[] rightChannel;
+
+//other vars
+int lastCount;
+int renderCount = 0;
 
 public void setup(){
   /* size commented out by preprocessor */;
   //fullScreen(P3D);
 
-  
+
   minim = new Minim(this);
-  song = new MultiChannelBuffer(1000,1);
-  float sampleRate = minim.loadFileIntoBuffer("shortTest.mp3",song);
+  song = new MultiChannelBuffer(1,1);
+  float sampleRate = minim.loadFileIntoBuffer("shortTest.mp3", song);
+
+  leftChannel = song.getChannel(0);
+  rightChannel = song.getChannel(1);
+
+  Lfft = new FFT(bands * 2, sampleRate);
+  Rfft = new FFT(bands * 2, sampleRate);
+  samplesPerFrame = framePeriod * sampleRate;
+  
+  int N = song.getBufferSize();
+  float songDuration = N / sampleRate;
+  lastCount = PApplet.parseInt(N / samplesPerFrame);
+
 
   println(song.getChannelCount());
 }
 
 public void draw(){
+  renderCount++;
+
   //analysis batch
   if(batch){
 
   }
 
+  //check end
+  if(renderCount >= lastCount){
+    exit();
+  }
 
   //draw
   render(spectrum);
@@ -67,7 +94,7 @@ public void render(float[] spec){
 }
 
 
-  public void settings() { size(1024, 512, P3D); }
+  public void settings() { size(1024, 800, P3D); }
 
   static public void main(String[] passedArgs) {
     String[] appletArgs = new String[] { "Sound_Visualizer" };
